@@ -8,7 +8,7 @@ namespace Dsw2025Tpi.Domain.Entities;
 
 public class Customer : EntityBase
 {
-    string Email { get; set; }
-    string Name { get; set; }
-    string PhoneNumber { get; set; }
+    public string Email { get; set; }
+    public string Name { get; set; }
+    public string PhoneNumber { get; set; }
 }
