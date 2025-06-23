@@ -1,0 +1,98 @@
+﻿[
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "phoneNumber": "123456789"
+  },
+  {
+    "id": "6b1d72a6-e0c2-4ff1-a803-fc72c9f83b7a",
+    "name": "Ana García",
+    "email": "ana@example.com",
+    "phoneNumber": "987654321"
+  },
+  {
+    "id": "8c9e1d42-3a72-4b5c-9d21-6f3a8b1c4d5e",
+    "name": "Carlos Rodríguez",
+    "email": "carlos@example.com",
+    "phoneNumber": "555123456"
+  },
+  {
+    "id": "2e4f6a8b-1d3c-5e7f-9a2b-4d6c8e1f3a5b",
+    "name": "María López",
+    "email": "maria@example.com",
+    "phoneNumber": "789456123"
+  },
+  {
+    "id": "7b5d3a9c-1e2f-4d6b-8a3c-5f9e1b2d4a7c",
+    "name": "Luis Martínez",
+    "email": "luis@example.com",
+    "phoneNumber": "321654987"
+  },
+  {
+    "id": "4d6f8a2c-5b9e-1d3f-7a8b-2c4e6d9f1a5b",
+    "name": "Sofía Hernández",
+    "email": "sofia@example.com",
+    "phoneNumber": "654987321"
+  },
+  {
+    "id": "9e1f5a3b-8d2c-4f6a-7b5d-1a3c9e2f4d5b",
+    "name": "Pedro González",
+    "email": "pedro@example.com",
+    "phoneNumber": "987321654"
+  },
+  {
+    "id": "3c5a7e9b-1d2f-4a6b-8c5d-3e9f1a2b4c5d",
+    "name": "Laura Díaz",
+    "email": "laura@example.com",
+    "phoneNumber": "456789123"
+  },
+  {
+    "id": "1a2b3c4d-5e6f-7a8b-9c1d-2e3f4a5b6c7d",
+    "name": "Jorge Sánchez",
+    "email": "jorge@example.com",
+    "phoneNumber": "789123456"
+  },
+  {
+    "id": "5b6c7d8e-9f1a-2b3c-4d5e-6f7a8b9c1d2e",
+    "name": "Elena Ramírez",
+    "email": "elena@example.com",
+    "phoneNumber": "321789654"
+  },
+  {
+    "id": "4a5b6c7d-8e9f-1a2b-3c4d-5e6f7a8b9c1d",
+    "name": "Miguel Torres",
+    "email": "miguel@example.com",
+    "phoneNumber": "654321987"
+  },
+  {
+    "id": "7c8d9e1f-2a3b-4c5d-6e7f-8a9b1c2d3e4f",
+    "name": "Isabel Flores",
+    "email": "isabel@example.com",
+    "phoneNumber": "987654123"
+  },
+  {
+    "id": "2d3e4f5a-6b7c-8d9e-1f2a-3b4c5d6e7f8a",
+    "name": "Fernando Castro",
+    "email": "fernando@example.com",
+    "phoneNumber": "123789456"
+  },
+  {
+    "id": "6e7f8a9b-1c2d-3e4f-5a6b-7c8d9e1f2a3b",
+    "name": "Patricia Ruiz",
+    "email": "patricia@example.com",
+    "phoneNumber": "456123789"
+  },
+  {
+    "id": "9a1b2c3d-4e5f-6a7b-8c9d-1e2f3a4b5c6d",
+    "name": "Ricardo Mendoza",
+    "email": "ricardo@example.com",
+    "phoneNumber": "789456321"
+  },
+  {
+    "id": "3b4c5d6e-7f8a-9b1c-2d3e-4f5a6b7c8d9e",
+    "name": "Adriana Vargas",
+    "email": "adriana@example.com",
+    "phoneNumber": "321456987"
+  }
+]
