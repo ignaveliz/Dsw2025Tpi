@@ -19,22 +19,22 @@ public class ProductsManagementService
         _repository = repository;
     }
 
-    public async Task<ProductModel.Response?> GetProductById(Guid id)
+    public async Task<ProductModel.ProductResponse?> GetProductById(Guid id)
     {
         var product = await _repository.GetById<Product>(id);
         return product != null ?
-            new ProductModel.Response(product.Id,product.Sku,product.InternalCode,product.Name,product.Description,product.CurrentUnitPrice,product.StockQuantity,product.IsActive) :
+            new ProductModel.ProductResponse(product.Id,product.Sku,product.InternalCode,product.Name,product.Description,product.CurrentUnitPrice,product.StockQuantity,product.IsActive) :
             null;
     }
 
-    public async Task<IEnumerable<ProductModel.Response>?> GetProducts()
+    public async Task<IEnumerable<ProductModel.ProductResponse>?> GetProducts()
     {
         return (await _repository
             .GetFiltered<Product>(p => p.IsActive))?
-            .Select(p => new ProductModel.Response(p.Id, p.Sku, p.InternalCode, p.Name, p.Description, p.CurrentUnitPrice, p.StockQuantity, p.IsActive));
+            .Select(p => new ProductModel.ProductResponse(p.Id, p.Sku, p.InternalCode, p.Name, p.Description, p.CurrentUnitPrice, p.StockQuantity, p.IsActive));
     }
 
-    public async Task<ProductModel.Response> AddProduct(ProductModel.Request request)
+    public async Task<ProductModel.ProductResponse> AddProduct(ProductModel.ProductRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Sku) ||
             string.IsNullOrWhiteSpace(request.Name) ||
@@ -48,10 +48,10 @@ public class ProductsManagementService
         if (exist != null) throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}");
         var product = new Product(request.Sku,request.InternalCode,request.Name,request.Description,request.CurrentUnitPrice,request.StockQuantity);
         await _repository.Add(product);
-        return new ProductModel.Response(product.Id, product.Sku, product.InternalCode, product.Name, product.Description, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
+        return new ProductModel.ProductResponse(product.Id, product.Sku, product.InternalCode, product.Name, product.Description, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
     }
 
-    public async Task<ProductModel.Response> UpdateProduct(Guid id, ProductModel.Request request)
+    public async Task<ProductModel.ProductResponse> UpdateProduct(Guid id, ProductModel.ProductRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Sku) ||
             string.IsNullOrWhiteSpace(request.Name) ||
@@ -73,7 +73,7 @@ public class ProductsManagementService
 
         await _repository.Update(product);
 
-        return new ProductModel.Response(
+        return new ProductModel.ProductResponse(
             product.Id, product.Sku, product.InternalCode, product.Name, product.Description, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
     }
 

@@ -25,9 +25,9 @@ public class Program
         builder.Services.AddDbContext<Dsw2025TpiContext>(options => 
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025TpiEntities"));
-            options.UseSeeding((c,t) => 
+            options.UseSeeding((c, t) =>
             {
-                ((Dsw2025TpiContext)c).Seedwork<Customer>("customers.json");
+                ((Dsw2025TpiContext)c).Seedwork<Customer>("Sources\\customers.json");
             });
         });
         builder.Services.AddScoped<IRepository,EfRepository>();
@@ -36,7 +36,7 @@ public class Program
 
 
         var app = builder.Build();
-
+        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

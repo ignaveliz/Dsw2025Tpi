@@ -18,10 +18,10 @@ public class OrderManagementService
         _repository = repository;
     } 
 
-    public async Task<OrderModel.Response?> CreateOrder(OrderModel.Request request)
+    public async Task<OrderModel.OrderResponse?> CreateOrder(OrderModel.OrderRequest request)
     {
-        var customer = await _repository.GetById<Customer>(request.CustomerId);
-        if (customer == null) return null;// aca deberia tirar una excepcion personalizada
+        /*var customer = await _repository.GetById<Customer>(request.CustomerId);
+        if (customer == null) throw new Exception("Customer not found");*/
 
         var orderItems = new List<OrderItem>();
         decimal totalAmount = 0;
@@ -62,7 +62,7 @@ public class OrderManagementService
 
         await _repository.Add(order);
 
-        return new OrderModel.Response(
+        return new OrderModel.OrderResponse(
             order.Id,
             order.Date,
             order.ShippingAddress,

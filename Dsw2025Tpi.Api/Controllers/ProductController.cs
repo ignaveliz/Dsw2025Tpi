@@ -15,7 +15,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost()]
-    public async Task<IActionResult> AddProduct([FromBody]ProductModel.Request request)
+    public async Task<IActionResult> AddProduct([FromBody]ProductModel.ProductRequest request)
     {
         try
         {
