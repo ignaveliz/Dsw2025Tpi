@@ -20,7 +20,7 @@ public class ProductController : ControllerBase
         try
         {
             var product = await _service.AddProduct(request);
-            return Ok(product);
+            return Created($"/api/products/{product.Id}",product);
         }
         catch (ArgumentException ae)
         {
