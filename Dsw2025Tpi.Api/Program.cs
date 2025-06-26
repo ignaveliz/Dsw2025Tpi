@@ -1,4 +1,5 @@
 
+using Dsw2025Tpi.Application.Services;
 using Dsw2025Tpi.Data;
 using Dsw2025Tpi.Data.Helpers;
 using Dsw2025Tpi.Data.Repositories;
@@ -30,6 +31,9 @@ public class Program
             });
         });
         builder.Services.AddScoped<IRepository,EfRepository>();
+        builder.Services.AddTransient<ProductsManagementService>();
+        builder.Services.AddTransient<OrderManagementService>();
+
 
         var app = builder.Build();
 
