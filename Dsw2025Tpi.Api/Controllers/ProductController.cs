@@ -11,16 +11,16 @@ public class ProductController : ControllerBase
     private readonly ProductsManagementService _service;
     public ProductController(ProductsManagementService service)
     {
-         _service = service;
+        _service = service;
     }
 
     [HttpPost()]
-    public async Task<IActionResult> AddProduct([FromBody]ProductModel.ProductRequest request)
+    public async Task<IActionResult> AddProduct([FromBody] ProductModel.ProductRequest request)
     {
         try
         {
             var product = await _service.AddProduct(request);
-            return Created($"/api/products/{product.Id}",product);
+            return Created($"/api/products/{product.Id}", product);
         }
         catch (ArgumentException ae)
         {
@@ -42,5 +42,18 @@ public class ProductController : ControllerBase
         var products = await _service.GetProducts();
         if (products == null || !products.Any()) return NoContent();
         return Ok(products);
+
     }
+
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetProductById(Guid id)
+    {
+        var product = await _service.GetProductById(id);
+        if (product is null)
+            return NotFound($"Producto con ID {id} no encontrado.");
+
+        return Ok(product);
+    }
+
 }
