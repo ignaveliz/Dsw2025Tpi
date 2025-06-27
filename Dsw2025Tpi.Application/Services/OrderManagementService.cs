@@ -35,10 +35,13 @@ public class OrderManagementService
         foreach (var item in request.OrderItems)
         {
             var product = await _repository.GetById<Product>(item.ProductId);
-            if (product is null || !product.IsActive)
-                throw new InvalidEntityException($"Producto {item.ProductId} inválido.");
+            if (product is null)
+                throw new InvalidEntityException($" No existe el Producto con id: {item.ProductId}.");
 
-            if(string.IsNullOrWhiteSpace(item.Name))
+            if (!product.IsActive)
+                throw new InvalidEntityException($"No está activo el producto con id: {item.ProductId}.");
+
+            if (string.IsNullOrWhiteSpace(item.Name))
                 throw new InvalidFieldException("El nombre del producto es obligatorio.");
 
             if (item.Quantity <= 0) throw new InvalidFieldException("La cantidad del producto debe ser mayor a cero.");

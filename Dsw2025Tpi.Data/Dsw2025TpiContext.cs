@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dsw2025Tpi.Data;
 
-public class Dsw2025TpiContext: DbContext
+public class Dsw2025TpiContext : DbContext
 {
-    public Dsw2025TpiContext(DbContextOptions<Dsw2025TpiContext>options):base(options)
+    public Dsw2025TpiContext(DbContextOptions<Dsw2025TpiContext> options) : base(options)
     {
-        
+
     }
 
     public DbSet<Product> Products => Set<Product>();
@@ -24,7 +24,7 @@ public class Dsw2025TpiContext: DbContext
             entity.Property(p => p.Sku).IsRequired().HasMaxLength(20);
             entity.HasIndex(p => p.Sku).IsUnique();
             entity.Property(p => p.Name).IsRequired().HasMaxLength(60);
-            entity.Property(p => p.CurrentUnitPrice).IsRequired().HasPrecision(15,2);
+            entity.Property(p => p.CurrentUnitPrice).IsRequired().HasPrecision(15, 2);
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -35,10 +35,12 @@ public class Dsw2025TpiContext: DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
+            entity.Property(o => o.Status).HasDefaultValue(OrderStatus.Pending);
             entity.HasOne(o => o.Customer)
-                  .WithMany()
+                  .WithMany(c => c.Orders)
                   .HasForeignKey(o => o.CustomerId);
 
+            entity.Ignore(o => o.TotalAmount);
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -47,12 +49,14 @@ public class Dsw2025TpiContext: DbContext
             entity.Property(i => i.Quantity).IsRequired();
 
             entity.HasOne(i => i.Product)
-                  .WithMany()
+                  .WithMany(p => p.OrderItems)
                   .HasForeignKey(i => i.ProductId);
 
             entity.HasOne(i => i.Order)
                   .WithMany(o => o.OrderItems)
                   .HasForeignKey(i => i.OrderId);
+
+            entity.Ignore(i => i.SubTotal); 
         });
     }
 }

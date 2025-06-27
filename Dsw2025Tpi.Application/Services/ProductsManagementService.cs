@@ -25,7 +25,7 @@ public class ProductsManagementService
 
         if (product is null) throw new EntityNotFoundException($"No existe el producto con id: {id}");  
 
-        return new ProductModel.ProductResponse(product.Id, product.Sku, product.InternalCode, product.Name, product.Description, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
+        return new ProductModel.ProductResponse(product.Id, product.Sku!, product.InternalCode!, product.Name!, product.Description!, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
     }
 
     public async Task<IEnumerable<ProductModel.ProductResponse>?> GetProducts()
@@ -33,10 +33,10 @@ public class ProductsManagementService
         var products = (await _repository.GetFiltered<Product>(p => p.IsActive))?
             .Select(p => new ProductModel.ProductResponse(
                 p.Id,
-                p.Sku,
-                p.InternalCode,
-                p.Name,
-                p.Description,
+                p.Sku!,
+                p.InternalCode!,
+                p.Name!,
+                p.Description!,
                 p.CurrentUnitPrice,
                 p.StockQuantity,
                 p.IsActive
@@ -60,7 +60,7 @@ public class ProductsManagementService
         if (exist != null) throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}");
         var product = new Product(request.Sku, request.InternalCode, request.Name, request.Description, request.CurrentUnitPrice, request.StockQuantity);
         await _repository.Add(product);
-        return new ProductModel.ProductResponse(product.Id, product.Sku, product.InternalCode, product.Name, product.Description, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
+        return new ProductModel.ProductResponse(product.Id, product.Sku!, product.InternalCode!, product.Name!, product.Description!, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
     }
 
     public async Task<ProductModel.ProductResponse> UpdateProduct(Guid id, ProductModel.ProductRequest request)
