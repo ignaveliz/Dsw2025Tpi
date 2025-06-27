@@ -1,4 +1,5 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
+using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -54,6 +55,45 @@ public class ProductController : ControllerBase
             return NotFound($"Producto con ID {id} no encontrado.");
 
         return Ok(product);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductModel.ProductRequest request)
+    {
+        try
+        {
+            var product = await _service.UpdateProduct(id, request);
+            if (product is null)
+                return NotFound($"No se encontró un producto con ID {id}.");
+
+            return Ok(product);
+        }
+        catch (ArgumentException ae)
+        {
+            return BadRequest(ae.Message);
+        }
+        catch (Exception)
+        {
+            return Problem("Error al actualizar el producto.");
+        }
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> DisableProduct(Guid id)
+    {
+        try
+        {
+            var result = await _service.DisableProduct(id);
+            return Ok(new { message = "Producto deshabilitado correctamente." });
+        }
+        catch (EntityNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem("Error al deshabilitar el producto.");
+        }
     }
 
 }
