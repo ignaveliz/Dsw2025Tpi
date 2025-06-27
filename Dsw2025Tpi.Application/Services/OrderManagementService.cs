@@ -57,7 +57,7 @@ public class OrderManagementService
             ShippingAddress = request.ShippingAddress,
             BillingAddress = request.BillingAddress,
             Date = DateTime.UtcNow,
-            Notes = string.Empty,
+            Notes = request.Notes ?? String.Empty,
             Status = OrderStatus.Pending,
             TotalAmount = totalAmount
         };
