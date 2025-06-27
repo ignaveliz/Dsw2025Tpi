@@ -23,26 +23,28 @@ public class ProductController : ControllerBase
             var product = await _service.AddProduct(request);
             return Created($"/api/products/{product.Id}", product);
         }
-        catch (ArgumentException ae)
+        catch (InvalidFieldException ie)
         {
-            return BadRequest(ae.Message);
+            return BadRequest(ie.Message);
         }
-        catch (ApplicationException de)
+        catch (DuplicatedEntityException de)
         {
-            return Conflict(de.Message);
-        }
-        catch (Exception)
-        {
-            return Problem("Error al guardar el producto");
+            return BadRequest(de.Message);
         }
     }
 
     [HttpGet()]
     public async Task<IActionResult> GetProducts()
     {
-        var products = await _service.GetProducts();
-        if (products == null || !products.Any()) return NoContent();
-        return Ok(products);
+        try
+        {
+            var products = await _service.GetProducts();
+            return Ok(products);
+        }
+        catch (NoContentException)
+        {
+            return NoContent();
+        }
 
     }
 
@@ -50,11 +52,16 @@ public class ProductController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductById(Guid id)
     {
-        var product = await _service.GetProductById(id);
-        if (product is null)
-            return NotFound($"Producto con ID {id} no encontrado.");
+        try
+        {
+            var product = await _service.GetProductById(id);
+            return Ok(product);
+        }
+        catch (EntityNotFoundException enfe)
+        {
+            return NotFound(enfe.Message);
+        }
 
-        return Ok(product);
     }
 
     [HttpPut("{id}")]
@@ -63,18 +70,23 @@ public class ProductController : ControllerBase
         try
         {
             var product = await _service.UpdateProduct(id, request);
-            if (product is null)
-                return NotFound($"No se encontró un producto con ID {id}.");
-
             return Ok(product);
         }
-        catch (ArgumentException ae)
+        catch (EntityNotFoundException enfe)
         {
-            return BadRequest(ae.Message);
+            return NotFound(enfe.Message);
         }
-        catch (Exception)
+        catch (EntityNotActive nae)
         {
-            return Problem("Error al actualizar el producto.");
+            return NotFound(nae.Message);
+        }
+        catch (InvalidFieldException ife)
+        {
+            return BadRequest(ife.Message);
+        }
+        catch(DuplicatedEntityException de)
+        {
+            return BadRequest(de.Message);
         }
     }
 
@@ -84,15 +96,15 @@ public class ProductController : ControllerBase
         try
         {
             var result = await _service.DisableProduct(id);
-            return Ok(new { message = "Producto deshabilitado correctamente." });
+            return NoContent();
         }
         catch (EntityNotFoundException ex)
         {
             return NotFound(ex.Message);
         }
-        catch (Exception)
+        catch (EntityNotActive nae)
         {
-            return Problem("Error al deshabilitar el producto.");
+            return NotFound(nae.Message);
         }
     }
 

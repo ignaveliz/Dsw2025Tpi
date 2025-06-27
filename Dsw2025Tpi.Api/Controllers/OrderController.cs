@@ -1,4 +1,5 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
+using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,17 +23,25 @@ public class OrderController : ControllerBase
             var order = await _service.CreateOrder(request);
             return Created($"/api/orders/{order.OrderId}", order);
         }
-        catch (ArgumentException ae)
+        catch (EntityNotFoundException nfe)
         {
-            return BadRequest(ae.Message);
+            return BadRequest(nfe.Message);
         }
-        catch (ApplicationException de)
+        catch (InvalidEntityException ie)
         {
-            return Conflict(de.Message);
+            return BadRequest(ie.Message);
         }
-        catch (Exception ex)
+        catch (InsufficientStockException ise)
         {
-            return Problem(detail: ex.InnerException?.Message ?? ex.Message, title: "Excepción interna", statusCode: 500);
+            return BadRequest(ise.Message);
+        }
+        catch(NoContentException nce)
+        {
+            return BadRequest(nce.Message);
+        }
+        catch (InvalidFieldException ife)
+        {
+            return BadRequest(ife.Message);
         }
     }
 }

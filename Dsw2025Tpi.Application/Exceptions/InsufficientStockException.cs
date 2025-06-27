@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions;
 
-public class CustomerNotFoundException : ApplicationException
+public class InsufficientStockException : ApplicationException
 {
-    public CustomerNotFoundException(string message) : base(message)
+    public InsufficientStockException(string message) : base(message)
     {
-        
     }
 }
