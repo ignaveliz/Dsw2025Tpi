@@ -16,51 +16,66 @@ public class OrderManagementService
     public OrderManagementService(IRepository repository)
     {
         _repository = repository;
-    } 
+    }
 
     public async Task<OrderModel.OrderResponse?> CreateOrder(OrderModel.OrderRequest request)
     {
-        /*var customer = await _repository.GetById<Customer>(request.CustomerId);
-        if (customer == null) throw new Exception("Customer not found");*/
+        var customer = await _repository.GetById<Customer>(request.CustomerId);
+        if (customer is null)
+            throw new ArgumentException("El cliente no existe.");
 
+        var totalAmount = 0m;
         var orderItems = new List<OrderItem>();
-        decimal totalAmount = 0;
 
         foreach (var item in request.OrderItems)
         {
             var product = await _repository.GetById<Product>(item.ProductId);
-            if (product is null || !product.IsActive || product.StockQuantity < item.Quantity)
-                return null;
+            if (product is null || !product.IsActive)
+                throw new ArgumentException($"Producto {item.ProductId} inválido.");
 
-            var subTotal = product.CurrentUnitPrice;
-            totalAmount = subTotal * item.Quantity;
+            if (product.StockQuantity < item.Quantity)
+                throw new ArgumentException($"Stock insuficiente para {product.Name}.");
 
             product.StockQuantity -= item.Quantity;
             await _repository.Update(product);
+
+            var subTotal = item.UnitPrice * item.Quantity;
+            totalAmount += subTotal;
 
             orderItems.Add(new OrderItem
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                SubTotal = subTotal
+                SubTotal = subTotal 
             });
-
-            totalAmount += subTotal;
         }
 
         var order = new Order
         {
             CustomerId = request.CustomerId,
-            ShippingAddress = request.ShippingAdress,
-            BillingAddress = request.BillingAdress,
+            ShippingAddress = request.ShippingAddress,
+            BillingAddress = request.BillingAddress,
             Date = DateTime.UtcNow,
+            Notes = string.Empty,
             Status = OrderStatus.Pending,
-            TotalAmount = totalAmount,
-            OrderItems = orderItems
+            TotalAmount = totalAmount
         };
 
         await _repository.Add(order);
+
+        foreach (var item in orderItems)
+        {
+            item.OrderId = order.Id;
+            await _repository.Add(item);
+        }
+
+        var responseItems = orderItems.Select(i => new OrderModel.OrderItemResponse(
+            i.ProductId,
+            i.Quantity,
+            i.UnitPrice,
+            i.SubTotal
+        )).ToList();
 
         return new OrderModel.OrderResponse(
             order.Id,
@@ -70,12 +85,7 @@ public class OrderManagementService
             order.Notes,
             order.Status,
             order.TotalAmount,
-            order.OrderItems.Select(i => new OrderModel.OrderItemResponse(
-                i.ProductId,
-                i.Quantity,
-                i.UnitPrice,
-                i.SubTotal
-                )).ToList());
-       
+            responseItems
+        );
     }
 }

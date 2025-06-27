@@ -32,7 +32,7 @@ public class OrderController : ControllerBase
         }
         catch (Exception ex)
         {
-            return Problem(detail: ex.Message, title: "Excepción interna", statusCode: 500);
+            return Problem(detail: ex.InnerException?.Message ?? ex.Message, title: "Excepción interna", statusCode: 500);
         }
     }
 }

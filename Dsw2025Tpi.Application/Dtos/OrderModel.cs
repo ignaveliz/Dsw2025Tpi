@@ -12,6 +12,6 @@ public record OrderModel
     public record OrderItemRequest(Guid ProductId,int Quantity,string Name,string Description,decimal UnitPrice);
     public record OrderItemResponse(Guid ProductId, int Quantity, decimal UnitPrice, decimal SubTotal);
 
-    public record OrderRequest(Guid CustomerId, string ShippingAdress, string BillingAdress, ICollection<OrderItemRequest> OrderItems);
+    public record OrderRequest(Guid CustomerId, string ShippingAddress, string BillingAddress, ICollection<OrderItemRequest> OrderItems);
     public record OrderResponse(Guid OrderId, DateTime Date, string ShippingAdress,string BillingAdress,string Notes, OrderStatus Status, decimal TotalAmount, ICollection<OrderItemResponse> OrderItems);
 }
