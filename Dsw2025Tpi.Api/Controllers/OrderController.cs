@@ -44,4 +44,20 @@ public class OrderController : ControllerBase
             return BadRequest(ife.Message);
         }
     }
+
+    [HttpGet()]
+
+
+    public async Task<IActionResult> GetOrders()
+    {
+        try
+        {
+            var orders = await _service.GetOrders();
+            return Ok(orders);
+        }
+        catch (NoContentException)
+        {
+            return StatusCode(500); 
+        }
+    }
 }

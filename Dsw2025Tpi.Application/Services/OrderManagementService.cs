@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Dsw2025Tpi.Application.Dtos;
@@ -112,4 +113,39 @@ public class OrderManagementService
             responseItems
         );
     }
+
+    public async Task<IEnumerable<OrderModel.OrderResponse>?> GetOrders()
+    {
+        var orders = await _repository.GetAll<Order>();
+
+        var items = await _repository.GetAll<OrderItem>();
+
+        var totalAmount = 0M;
+
+        var itemsResponse = items.Select(i => new OrderModel.OrderItemResponse(i.ProductId, i.Quantity, i.UnitPrice, i.Quantity * i.UnitPrice)).ToList();
+
+        foreach (var item in itemsResponse){
+
+            totalAmount += item.UnitPrice * item.Quantity;
+
+         }
+
+        var orderResponses = orders.Select(o => new OrderModel.OrderResponse(
+         o.Id,
+         o.Date,
+         o.ShippingAddress,
+         o.BillingAddress,
+         o.Notes,
+         o.Status,
+         totalAmount,
+         itemsResponse
+            
+     )).ToList();
+
+        if (orders is null || !orders.Any())
+            throw new NoContentException("No hay oredenes cargadas en el sistema.");
+
+        return orderResponses;
+    }
+    
 }
