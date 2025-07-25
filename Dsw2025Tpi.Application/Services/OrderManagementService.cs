@@ -53,7 +53,7 @@ public class OrderManagementService
             if (product.StockQuantity < item.Quantity)
                 throw new InsufficientStockException($"Stock insuficiente para {product.Name}.");
 
-            stockUpdates.Add((product,product.StockQuantity - item.Quantity));
+            stockUpdates.Add((product, product.StockQuantity - item.Quantity));
 
             var subTotal = item.UnitPrice * item.Quantity;
             totalAmount += subTotal;
@@ -63,13 +63,13 @@ public class OrderManagementService
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                SubTotal = subTotal 
+                SubTotal = subTotal
             });
         }
 
         if (orderItems.Count == 0)
             throw new NoContentException("No se han agregado productos al pedido.");
-        
+
         var order = new Order
         {
             CustomerId = request.CustomerId,
@@ -105,6 +105,7 @@ public class OrderManagementService
         return new OrderModel.OrderResponse(
             order.Id,
             order.Date,
+            order.CustomerId,
             order.ShippingAddress,
             order.BillingAddress,
             order.Notes,
@@ -117,35 +118,38 @@ public class OrderManagementService
     public async Task<IEnumerable<OrderModel.OrderResponse>?> GetOrders()
     {
         var orders = await _repository.GetAll<Order>();
-
         var items = await _repository.GetAll<OrderItem>();
-
-        var totalAmount = 0M;
-
-        var itemsResponse = items.Select(i => new OrderModel.OrderItemResponse(i.ProductId, i.Quantity, i.UnitPrice, i.Quantity * i.UnitPrice)).ToList();
-
-        foreach (var item in itemsResponse){
-
-            totalAmount += item.UnitPrice * item.Quantity;
-
-         }
-
-        var orderResponses = orders.Select(o => new OrderModel.OrderResponse(
-         o.Id,
-         o.Date,
-         o.ShippingAddress,
-         o.BillingAddress,
-         o.Notes,
-         o.Status,
-         totalAmount,
-         itemsResponse
-            
-     )).ToList();
 
         if (orders is null || !orders.Any())
             throw new NoContentException("No hay oredenes cargadas en el sistema.");
 
+        var orderResponses = orders.Select(order =>
+        {
+            var orderItems = items!
+                .Where(i => i.OrderId == order.Id)
+                .Select(i => new OrderModel.OrderItemResponse(
+                    i.ProductId,
+                    i.Quantity,
+                    i.UnitPrice,
+                    i.Quantity * i.UnitPrice))
+                .ToList();
+
+            var totalAmount = orderItems!.Sum(i => i.SubTotal);
+
+            return new OrderModel.OrderResponse(
+                order.Id,
+                order.Date,
+                order.CustomerId,
+                order.ShippingAddress!,
+                order.BillingAddress!,
+                order.Notes!,
+                order.Status,
+                totalAmount,
+                orderItems
+            );
+        }).ToList();
+
         return orderResponses;
     }
-    
+
 }
