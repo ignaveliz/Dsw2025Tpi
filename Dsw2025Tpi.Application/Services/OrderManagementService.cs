@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Dsw2025Tpi.Application.Dtos;
@@ -52,7 +53,7 @@ public class OrderManagementService
             if (product.StockQuantity < item.Quantity)
                 throw new InsufficientStockException($"Stock insuficiente para {product.Name}.");
 
-            stockUpdates.Add((product,product.StockQuantity - item.Quantity));
+            stockUpdates.Add((product, product.StockQuantity - item.Quantity));
 
             var subTotal = item.UnitPrice * item.Quantity;
             totalAmount += subTotal;
@@ -62,13 +63,13 @@ public class OrderManagementService
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                SubTotal = subTotal 
+                SubTotal = subTotal
             });
         }
 
         if (orderItems.Count == 0)
             throw new NoContentException("No se han agregado productos al pedido.");
-        
+
         var order = new Order
         {
             CustomerId = request.CustomerId,
@@ -104,6 +105,7 @@ public class OrderManagementService
         return new OrderModel.OrderResponse(
             order.Id,
             order.Date,
+            order.CustomerId,
             order.ShippingAddress,
             order.BillingAddress,
             order.Notes,
@@ -112,4 +114,42 @@ public class OrderManagementService
             responseItems
         );
     }
+
+    public async Task<IEnumerable<OrderModel.OrderResponse>?> GetOrders()
+    {
+        var orders = await _repository.GetAll<Order>();
+        var items = await _repository.GetAll<OrderItem>();
+
+        if (orders is null || !orders.Any())
+            throw new NoContentException("No hay oredenes cargadas en el sistema.");
+
+        var orderResponses = orders.Select(order =>
+        {
+            var orderItems = items!
+                .Where(i => i.OrderId == order.Id)
+                .Select(i => new OrderModel.OrderItemResponse(
+                    i.ProductId,
+                    i.Quantity,
+                    i.UnitPrice,
+                    i.Quantity * i.UnitPrice))
+                .ToList();
+
+            var totalAmount = orderItems!.Sum(i => i.SubTotal);
+
+            return new OrderModel.OrderResponse(
+                order.Id,
+                order.Date,
+                order.CustomerId,
+                order.ShippingAddress!,
+                order.BillingAddress!,
+                order.Notes!,
+                order.Status,
+                totalAmount,
+                orderItems
+            );
+        }).ToList();
+
+        return orderResponses;
+    }
+
 }

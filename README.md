@@ -2,30 +2,52 @@
 ## Desarrollo de Software
 ### Backend
 
-## Introducción
-Se desea desarrollar una plataforma de comercio electrónico (E-commerce). 
-En esta primera etapa el objetivo es construir el módulo de Órdenes, permitiendo la gestión completa de éstas.
+## Integrantes del grupo
+- **Veliz Ignacio Martin** - Legajo 56571
+- **Rizo Avalos Nadia Enoa** - Legajo 56199
+- **Soria Leandro Miguel** - Legajo 56068
 
-## Visión General del Producto
-Del relevamiento preliminar se identificaron los siguientes requisitos:
-- Los visitantes pueden consultar los productos sin necesidad de estar registrados o iniciar sesión.
-- Para realizar un pedido se requiere el inicio de sesión.
-- Una orden, para ser aceptada, debe incluir la información básica del cliente, envío y facturación.
-- Antes de registrar la orden se debe verificar la disponibilidad de stock (o existencias) de los productos.
-- Si la orden es exitosa hay que actualizar el stock de cada producto.
-- Se deben poder consultar órdenes individuales o listar varias con posibilidad de filtrado.
-- Será necesario el cambio de estado de una orden a medida que avanza en su ciclo de vida.
-- Los administradores solo pueden gestionar los productos (alta, modificación y baja) y actualizar el estado de la orden.
-- Los clientes pueden crear y consultar órdenes.
+## Instrucciones para configurar y ejecutar el proyecto
 
-[Documento completo](https://frtutneduar.sharepoint.com/:b:/s/DSW2025/ETueAd4rTe1Gilj_Yfi64RYB5oz9s2dOamxKSfMFPREbiA?e=azZcwg) 
+### Requisitos previos:
+- .NET 8
+- SQL Server
+- Visual Studio 2022
 
-## Alcance para el Primer Parcial
-> [!IMPORTANT]
-> Del apartado `IMPLEMENTACIÓN` (Pag. 7), completo hasta el punto `6` (inclusive)
+### Cloná el repositorio 
+- git clone https://github.com/ignaveliz/Dsw2025Tpi.git
+- cd Dsw2025Tpi
 
+### Configurá la cadena de conexión
+Edita el archivo appsettings.json dentro del proyecto Dsw2025Tpi.Api:  
+<br>JSON<br>  
+"ConnectionStrings": {
+  "Dsw2025TpiEntities": "Server=(localdb)\\MSSQLLocalDB;Database=Dsw2025Db;Trusted_Connection=True;"
+}
 
-### Características de la Solución
+### Crear y poblar la base de datos
+1. Aplica la migracion ejecutando el siguiente comando en la Package Manager Console:  
+   <br>Update-Database<br><br>
+2. Al iniciar el proyecto por primera vez, se cargan datos desde Sources/customers.json
 
-- Lenguaje: C# 12.0
-- Plataforma: .NET 8
+### Cómo ejecutar el proyecto  
+En Visual Studio:  
+1. Establecé Dsw2025Tpi.Api como proyecto de inicio
+2. Ejecutá con F5 o Ctrl + F5
+3. Se abrirá el browser con Swagger
+
+## EndPoints Disponibles
+### Products
+
+| Método | Ruta                          | Descripción                          |
+|--------|-------------------------------|--------------------------------------|
+| GET    | `/api/products`              | Obtiene todos los productos disponibles |
+| GET    | `/api/products/{id}`         | Obtiene un producto por su ID        |
+| POST   | `/api/products`              | Agrega un nuevo producto             |
+| PUT    | `/api/products/{id}`         | Actualiza los datos de un producto   |
+| PATCH  | `/api/products/{id}`         | Desactiva un producto                |
+
+### Orders  
+| Método | Ruta            | Descripción                                       |
+|--------|------------------|---------------------------------------------------|
+| POST   | `/api/orders`   | Crea una nueva orden, validando stock             |
