@@ -23,13 +23,17 @@ public class ProductController : ControllerBase
             var product = await _service.AddProduct(request);
             return Created($"/api/products/{product.Id}", product);
         }
-        catch (InvalidFieldException ie)
+        catch (ArgumentException ae)
         {
-            return BadRequest(ie.Message);
+            return BadRequest(ae.Message);
         }
         catch (DuplicatedEntityException de)
         {
             return BadRequest(de.Message);
+        }
+        catch(Exception)
+        {
+            return StatusCode(500);
         }
     }
 
@@ -44,6 +48,10 @@ public class ProductController : ControllerBase
         catch (NoContentException)
         {
             return NoContent();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
         }
 
     }
@@ -60,6 +68,10 @@ public class ProductController : ControllerBase
         catch (EntityNotFoundException enfe)
         {
             return NotFound(enfe.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
         }
 
     }
@@ -80,13 +92,17 @@ public class ProductController : ControllerBase
         {
             return NotFound(nae.Message);
         }
-        catch (InvalidFieldException ife)
+        catch (ArgumentException ae)
         {
-            return BadRequest(ife.Message);
+            return BadRequest(ae.Message);
         }
         catch(DuplicatedEntityException de)
         {
             return BadRequest(de.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
         }
     }
 
@@ -105,6 +121,10 @@ public class ProductController : ControllerBase
         catch (EntityNotActive nae)
         {
             return NotFound(nae.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
         }
     }
 

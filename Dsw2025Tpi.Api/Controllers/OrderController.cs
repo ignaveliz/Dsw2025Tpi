@@ -21,15 +21,19 @@ public class OrderController : ControllerBase
         try
         {
             var order = await _service.CreateOrder(request);
-            return Created($"/api/orders/{order.OrderId}", order);
+            return Created($"/api/orders/{order?.OrderId}", order);
         }
         catch (EntityNotFoundException nfe)
         {
             return BadRequest(nfe.Message);
         }
-        catch (InvalidEntityException ie)
+        catch (ArgumentException ife)
         {
-            return BadRequest(ie.Message);
+            return BadRequest(ife.Message);
+        }
+        catch (EntityNotActive nae)
+        {
+            return BadRequest(nae.Message);
         }
         catch (InsufficientStockException ise)
         {
@@ -39,15 +43,13 @@ public class OrderController : ControllerBase
         {
             return BadRequest(nce.Message);
         }
-        catch (InvalidFieldException ife)
+        catch (Exception)
         {
-            return BadRequest(ife.Message);
+            return StatusCode(500);
         }
     }
 
     [HttpGet()]
-
-
     public async Task<IActionResult> GetOrders()
     {
         try
@@ -58,6 +60,10 @@ public class OrderController : ControllerBase
         catch (NoContentException)
         {
             return StatusCode(500); 
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
         }
     }
 }
