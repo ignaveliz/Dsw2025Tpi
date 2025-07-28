@@ -151,5 +151,58 @@ public class OrderManagementService
 
         return orderResponses;
     }
+    public async Task<OrderModel.OrderResponse> GetOrderById(Guid id)
+    {
+        var order = await _repository.GetById<Order>(id);
+        if (order is null)
+            throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
+
+        var items = await _repository.GetAll<OrderItem>();
+        var orderItems = items!
+            .Where(i => i.OrderId == order.Id)
+            .Select(i => new OrderModel.OrderItemResponse(
+                i.ProductId,
+                i.Quantity,
+                i.UnitPrice,
+                i.Quantity * i.UnitPrice))
+            .ToList();
+
+        var totalAmount = orderItems.Sum(i => i.SubTotal);
+
+        return new OrderModel.OrderResponse(
+            order.Id,
+            order.Date,
+            order.CustomerId,
+            order.ShippingAddress!,
+            order.BillingAddress!,
+            order.Notes!,
+            order.Status,
+            totalAmount,
+            orderItems
+        );
+    }
+
+    public async Task<OrderModel.OrderResponse> UpdateOrderStatus(Guid id, OrderStatus newStatus)
+    {
+        var order = await _repository.GetById<Order>(id);
+        if (order is null)
+            throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
+
+        if (!Enum.IsDefined(typeof(OrderStatus), newStatus))
+            throw new ArgumentException("El estado proporcionado no es válido.");
+        
+        if (order.Status == newStatus)
+            throw new ArgumentException($"la orden ya se encuentra en {newStatus}");
+
+
+        order.Status = newStatus;
+
+        await _repository.Update(order);
+
+        return await GetOrderById(order.Id);
+    }
+    
+
+
 
 }
