@@ -14,5 +14,4 @@ public record OrderModel
 
     public record OrderRequest(Guid CustomerId, string ShippingAddress, string BillingAddress, string Notes, ICollection<OrderItemRequest> OrderItems);
     public record OrderResponse(Guid OrderId, DateTime Date, Guid CustomerId, string ShippingAdress,string BillingAdress,string Notes, OrderStatus Status, decimal TotalAmount, ICollection<OrderItemResponse> OrderItems);
-}
-   //Vicente mi buen amigo otra campaña volveremos a estar contigo.
+} 

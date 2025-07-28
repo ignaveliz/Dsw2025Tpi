@@ -151,5 +151,59 @@ public class OrderManagementService
 
         return orderResponses;
     }
+    ///8
+    public async Task<OrderModel.OrderResponse> GetOrderById(Guid id)
+    {
+        var order = await _repository.GetById<Order>(id);
+        if (order is null)
+            throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
+
+        var items = await _repository.GetAll<OrderItem>();
+        var orderItems = items!
+            .Where(i => i.OrderId == order.Id)
+            .Select(i => new OrderModel.OrderItemResponse(
+                i.ProductId,
+                i.Quantity,
+                i.UnitPrice,
+                i.Quantity * i.UnitPrice))
+            .ToList();
+
+        var totalAmount = orderItems.Sum(i => i.SubTotal);
+
+        return new OrderModel.OrderResponse(
+            order.Id,
+            order.Date,
+            order.CustomerId,
+            order.ShippingAddress!,
+            order.BillingAddress!,
+            order.Notes!,
+            order.Status,
+            totalAmount,
+            orderItems
+        );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //9
+    public async Task<OrderModel.OrderResponse> UpdateOrderStatus(Guid id, OrderStatus newStatus)
+    {
+        var order = await _repository.GetById<Order>(id);
+        if (order is null)
+            throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
+
+     
+        if (order.Status == newStatus)
+            return await GetOrderById(order.Id);
+
+        
+        order.Status = newStatus;
+
+        await _repository.Update(order);
+
+        return await GetOrderById(order.Id);
+    }
+    
+
+
 
 }

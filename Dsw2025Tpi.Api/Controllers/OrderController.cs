@@ -1,6 +1,7 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Application.Services;
+using Dsw2025Tpi.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Dsw2025Tpi.Api.Controllers;
@@ -60,4 +61,50 @@ public class OrderController : ControllerBase
             return StatusCode(500); 
         }
     }
+    ///punto 8
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrderById(Guid id)
+    {
+        try
+        {
+            var order = await _service.GetOrderById(id);
+            return Ok(order); 
+        }
+        catch (EntityNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    /// punto 9
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+    {
+        try
+        {
+            var order = await _service.GetOrderById(id);
+            if (order == null)
+            {
+                return NotFound($"No existe la orden con id: {id}");
+            }
+
+            if (!Enum.IsDefined(typeof(OrderStatus), request.NewStatus))
+            {
+                return BadRequest("El estado proporcionado no es válido.");
+            }
+
+
+            var updatedOrder = await _service.UpdateOrderStatus(id, request.NewStatus);
+            return Ok(updatedOrder);
+        }
+        catch (InvalidEntityException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
+    }
+
 }
