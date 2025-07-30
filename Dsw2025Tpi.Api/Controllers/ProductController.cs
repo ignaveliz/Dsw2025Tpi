@@ -53,9 +53,9 @@ public class ProductController : ControllerBase
         {
             return NoContent();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500);
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
 
     }
@@ -74,9 +74,9 @@ public class ProductController : ControllerBase
         {
             return NotFound(enfe.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500);
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
 
     }
@@ -106,9 +106,9 @@ public class ProductController : ControllerBase
         {
             return BadRequest(de.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500);
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
     }
 
@@ -129,9 +129,9 @@ public class ProductController : ControllerBase
         {
             return NotFound(nae.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500);
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
     }
 }

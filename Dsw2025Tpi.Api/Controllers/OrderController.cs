@@ -47,9 +47,9 @@ public class OrderController : ControllerBase
         {
             return BadRequest(nce.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500);
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
     }
 
@@ -62,13 +62,13 @@ public class OrderController : ControllerBase
             var orders = await _service.GetOrders();
             return Ok(orders);
         }
-        catch (NoContentException)
+        catch (NoContentException nce)
         {
-            return StatusCode(500); 
+            return StatusCode(500,$"{nce.Message}"); 
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500);
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
     }
     
@@ -84,6 +84,10 @@ public class OrderController : ControllerBase
         catch (EntityNotFoundException ex)
         {
             return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
     }
 

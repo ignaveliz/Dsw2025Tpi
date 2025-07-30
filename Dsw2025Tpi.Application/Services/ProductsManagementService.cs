@@ -58,7 +58,7 @@ public class ProductsManagementService
 
         var exist = await _repository.First<Product>(p => p.Sku == request.Sku);
         if (exist != null) throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}");
-        var product = new Product(request.Sku, request.InternalCode, request.Name, request.Description, request.CurrentUnitPrice, request.StockQuantity);
+        var product = new Product(request.Sku, request.InternalCode!, request.Name, request.Description!, request.CurrentUnitPrice, request.StockQuantity);
         await _repository.Add(product);
         return new ProductModel.ProductResponse(product.Id, product.Sku!, product.InternalCode!, product.Name!, product.Description!, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
     }
@@ -87,7 +87,7 @@ public class ProductsManagementService
         await _repository.Update(product);
 
         return new ProductModel.ProductResponse(
-            product.Id, product.Sku, product.InternalCode, product.Name, product.Description, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
+            product.Id, product.Sku, product.InternalCode!, product.Name, product.Description!, product.CurrentUnitPrice, product.StockQuantity, product.IsActive);
     }
 
     public async Task<bool> DisableProduct(Guid id)
