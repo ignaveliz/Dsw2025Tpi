@@ -19,6 +19,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost()]
+    [Authorize(Roles = "Usuario,Tester")]
     public async Task<IActionResult> CreateOrder([FromBody] OrderModel.OrderRequest request)
     {
         try
@@ -53,6 +54,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet()]
+    [Authorize(Roles = "Usuario,Tester,Admin")]
     public async Task<IActionResult> GetOrders()
     {
         try
@@ -69,7 +71,9 @@ public class OrderController : ControllerBase
             return StatusCode(500);
         }
     }
+    
     [HttpGet("{id}")]
+    [Authorize(Roles = "Usuario,Tester,Admin")]
     public async Task<IActionResult> GetOrderById(Guid id)
     {
         try
@@ -84,6 +88,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
     {
         try

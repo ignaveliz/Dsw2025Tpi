@@ -37,20 +37,26 @@ public class AuthenticateController : ControllerBase
             return Unauthorized("Usuario o contraseña incorrectos");
         }
 
-        var token = _jwtTokenService.GenerateToken(request.Username);
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault();
+
+        if (role == null) return Unauthorized("El usuario no tiene roles registrados en el sistema");
+
+        var token = _jwtTokenService.GenerateToken(request.Username,role);
         return Ok(new { token });
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-
-
         var user = new IdentityUser { UserName = model.Username, Email = model.Email };
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
+
+        var role = model.Role ?? "Usuario";
+        await _userManager.AddToRoleAsync(user, role);
 
         // Opcional: enviar email de confirmación, etc.
         return Ok("Usuario registrado correctamente.");

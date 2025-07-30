@@ -18,6 +18,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost()]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> AddProduct([FromBody] ProductModel.ProductRequest request)
     {
         try
@@ -40,6 +41,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet()]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProducts()
     {
         try
@@ -60,6 +62,7 @@ public class ProductController : ControllerBase
 
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProductById(Guid id)
     {
         try
@@ -79,6 +82,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductModel.ProductRequest request)
     {
         try
@@ -109,6 +113,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPatch("{id}")]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> DisableProduct(Guid id)
     {
         try
@@ -129,7 +134,4 @@ public class ProductController : ControllerBase
             return StatusCode(500);
         }
     }
-
-
-
 }

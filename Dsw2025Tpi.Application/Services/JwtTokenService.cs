@@ -19,7 +19,7 @@ public class JwtTokenService
         _config = config;
     }
 
-    public string GenerateToken(string username)
+    public string GenerateToken(string username,string role)
     {
         var jwtConfig = _config.GetSection("Jwt");
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("Jwt Key");
@@ -30,6 +30,7 @@ public class JwtTokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, username),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Role, role)
             //new Claim("role", role)
         };
 
