@@ -182,26 +182,54 @@ public class OrderManagementService
         );
     }
 
-    public async Task<OrderModel.OrderResponse> UpdateOrderStatus(Guid id, OrderStatus newStatus)
+    public async Task<OrderModel.OrderResponse> UpdateOrderStatus(Guid id, string newStatus)
     {
         var order = await _repository.GetById<Order>(id);
         if (order is null)
             throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
 
-        if (!Enum.IsDefined(typeof(OrderStatus), newStatus))
-            throw new ArgumentException("El estado proporcionado no es válido.");
-        
-        if (order.Status == newStatus)
-            throw new ArgumentException($"la orden ya se encuentra en {newStatus}");
+        //if (!Enum.IsDefined(typeof(OrderStatus), newStatus))
+        //    throw new ArgumentException("El estado proporcionado no es válido.");
 
+        var statusOld = order.Status;
 
-        order.Status = newStatus;
+        var status = newStatus.ToUpper();
+
+        switch (status)
+        {
+            case "PROCESSING": 
+                order.Status = OrderStatus.Processing;
+                break;
+
+            case "PENDING":
+                order.Status = OrderStatus.Pending;
+                break;
+
+            case "SHIPPED":
+                order.Status = OrderStatus.Shipped;
+                break;
+
+            case "DELIVERED":
+                order.Status = OrderStatus.Delivered;
+                break;
+
+            case "CANCELLED":
+                order.Status = OrderStatus.Cancelled;
+                break;
+
+            default:
+                throw new ArgumentException("Estado Invalido");
+
+        }
+
+        if (statusOld == order.Status)
+            throw new ArgumentException($"la orden ya se encuentra en {statusOld}");
 
         await _repository.Update(order);
 
         return await GetOrderById(order.Id);
     }
-    
+
 
 
 

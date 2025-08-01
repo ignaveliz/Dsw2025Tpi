@@ -93,11 +93,11 @@ public class OrderController : ControllerBase
 
     [HttpPut("{id}/status")]
     [Authorize(Roles = "Admin,Tester")]
-    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] OrderModel.UpdateOrderStatusRequest request)
     {
         try
         {
-            var updatedOrder = await _service.UpdateOrderStatus(id, request.NewStatus);
+            var updatedOrder = await _service.UpdateOrderStatus(id, request.NewStatus!);
             return Ok(updatedOrder);
         }
         catch (ArgumentException ex)
