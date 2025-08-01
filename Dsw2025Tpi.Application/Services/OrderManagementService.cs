@@ -109,7 +109,7 @@ public class OrderManagementService
             order.ShippingAddress,
             order.BillingAddress,
             order.Notes,
-            order.Status,
+            order.Status.ToString(),
             order.TotalAmount,
             responseItems
         );
@@ -143,7 +143,7 @@ public class OrderManagementService
                 order.ShippingAddress!,
                 order.BillingAddress!,
                 order.Notes!,
-                order.Status,
+                order.Status.ToString(),
                 totalAmount,
                 orderItems
             );
@@ -176,7 +176,7 @@ public class OrderManagementService
             order.ShippingAddress!,
             order.BillingAddress!,
             order.Notes!,
-            order.Status,
+            order.Status.ToString(),
             totalAmount,
             orderItems
         );
