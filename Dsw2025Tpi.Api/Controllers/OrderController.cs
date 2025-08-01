@@ -55,23 +55,27 @@ public class OrderController : ControllerBase
 
     [HttpGet()]
     [Authorize(Roles = "Usuario,Tester,Admin")]
-    public async Task<IActionResult> GetOrders()
+    public async Task<IActionResult> GetOrders(
+    [FromQuery] string? status,
+    [FromQuery] Guid? customerId,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
     {
         try
         {
-            var orders = await _service.GetOrders();
+            var orders = await _service.GetOrders(status, customerId, pageNumber, pageSize);
             return Ok(orders);
         }
         catch (NoContentException nce)
         {
-            return StatusCode(500,$"{nce.Message}"); 
+            return StatusCode(500, $"{nce.Message}");
         }
         catch (Exception ex)
         {
             return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         }
     }
-    
+
     [HttpGet("{id}")]
     [Authorize(Roles = "Usuario,Tester,Admin")]
     public async Task<IActionResult> GetOrderById(Guid id)

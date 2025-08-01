@@ -109,15 +109,37 @@ public class OrderManagementService
         );
     }
 
-    public async Task<IEnumerable<OrderModel.OrderResponse>?> GetOrders()
+    public async Task<IEnumerable<OrderModel.OrderResponse>> GetOrders(string? status, Guid? customerId, int pageNumber, int pageSize)
     {
+        if (pageNumber < 1)
+            throw new ArgumentException("El numero de pagina debe ser mayor o igual a 1.");
+
+        if (pageSize < 1 || pageSize > 100)
+            throw new ArgumentException("El tamaño de pagina debe estar entre 1 y 100.");
+
         var orders = await _repository.GetAll<Order>();
         var items = await _repository.GetAll<OrderItem>();
 
         if (orders is null || !orders.Any())
-            throw new NoContentException("No hay oredenes cargadas en el sistema.");
+            throw new NoContentException("No hay órdenes cargadas en el sistema.");
 
-        var orderResponses = orders.Select(order =>
+        if (!string.IsNullOrEmpty(status) &&
+            Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
+        {
+            orders = orders.Where(o => o.Status == parsedStatus).ToList();
+        }
+
+        if (customerId.HasValue)
+        {
+            orders = orders.Where(o => o.CustomerId == customerId.Value).ToList();
+        }
+
+        var paginatedOrders = orders
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var orderResponses = paginatedOrders.Select(order =>
         {
             var orderItems = items!
                 .Where(i => i.OrderId == order.Id)
@@ -128,7 +150,7 @@ public class OrderManagementService
                     i.SubTotal))
                 .ToList();
 
-            var totalAmount = orderItems!.Sum(i => i.SubTotal);
+            var totalAmount = orderItems.Sum(i => i.SubTotal);
 
             return new OrderModel.OrderResponse(
                 order.Id,
