@@ -34,7 +34,7 @@ public class OrderManagementService
         var stockUpdates = new List<(Product product, int Quantity)>();
 
         foreach (var item in request.OrderItems)
-        {
+        {    
             var product = await _repository.GetById<Product>(item.ProductId);
             if (product is null)
                 throw new EntityNotFoundException($" No existe el Producto con id: {item.ProductId}.");
@@ -42,29 +42,23 @@ public class OrderManagementService
             if (!product.IsActive)
                 throw new EntityNotActive($"No está activo el producto con id: {item.ProductId}.");
 
-            if (string.IsNullOrWhiteSpace(item.Name))
-                throw new ArgumentException("El nombre del producto es obligatorio.");
-
             if (item.Quantity <= 0) throw new ArgumentException("La cantidad del producto debe ser mayor a cero.");
-
-            if (item.UnitPrice < 0)
-                throw new ArgumentException("El precio unitario del producto no puede ser negativo.");
 
             if (product.StockQuantity < item.Quantity)
                 throw new InsufficientStockException($"Stock insuficiente para {product.Name}.");
 
             stockUpdates.Add((product, product.StockQuantity - item.Quantity));
 
-            var subTotal = item.UnitPrice * item.Quantity;
-            totalAmount += subTotal;
-
-            orderItems.Add(new OrderItem
+            var orderItem = new OrderItem 
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                SubTotal = subTotal
-            });
+                UnitPrice = product.CurrentUnitPrice
+            };
+
+            orderItems.Add(orderItem);
+
+            totalAmount += orderItem.SubTotal;
         }
 
         if (orderItems.Count == 0)
@@ -131,7 +125,7 @@ public class OrderManagementService
                     i.ProductId,
                     i.Quantity,
                     i.UnitPrice,
-                    i.Quantity * i.UnitPrice))
+                    i.SubTotal))
                 .ToList();
 
             var totalAmount = orderItems!.Sum(i => i.SubTotal);
@@ -164,7 +158,7 @@ public class OrderManagementService
                 i.ProductId,
                 i.Quantity,
                 i.UnitPrice,
-                i.Quantity * i.UnitPrice))
+                i.SubTotal))
             .ToList();
 
         var totalAmount = orderItems.Sum(i => i.SubTotal);
@@ -187,9 +181,6 @@ public class OrderManagementService
         var order = await _repository.GetById<Order>(id);
         if (order is null)
             throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
-
-        //if (!Enum.IsDefined(typeof(OrderStatus), newStatus))
-        //    throw new ArgumentException("El estado proporcionado no es válido.");
 
         var statusOld = order.Status;
 
@@ -229,8 +220,5 @@ public class OrderManagementService
 
         return await GetOrderById(order.Id);
     }
-
-
-
 
 }

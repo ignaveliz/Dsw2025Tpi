@@ -9,7 +9,7 @@ namespace Dsw2025Tpi.Application.Dtos;
 
 public record OrderModel
 {
-    public record OrderItemRequest(Guid ProductId,int Quantity,string? Name,string? Description,decimal UnitPrice);
+    public record OrderItemRequest(Guid ProductId,int Quantity);
     public record OrderItemResponse(Guid ProductId, int Quantity, decimal UnitPrice, decimal SubTotal);
 
     public record OrderRequest(Guid CustomerId, string? ShippingAddress, string? BillingAddress, string? Notes, ICollection<OrderItemRequest> OrderItems);
