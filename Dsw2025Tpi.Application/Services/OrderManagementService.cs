@@ -133,9 +133,13 @@ public class OrderManagementService
         if (orders is null || !orders.Any())
             throw new NoContentException("No hay órdenes cargadas en el sistema.");
 
-        if (!string.IsNullOrEmpty(status) &&
-            Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
+        if (!string.IsNullOrEmpty(status))
         {
+            if (!Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
+            {
+                throw new ArgumentException($"El estado '{status}' no es un estado de orden válido.");
+            }
+
             orders = orders.Where(o => o.Status == parsedStatus).ToList();
         }
 
