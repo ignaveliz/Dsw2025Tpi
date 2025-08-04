@@ -9,10 +9,12 @@ namespace Dsw2025Tpi.Application.Dtos;
 
 public record OrderModel
 {
-    public record OrderItemRequest(Guid ProductId,int Quantity,string Name,string Description,decimal UnitPrice);
+    public record OrderItemRequest(string? ProductId,int Quantity);
     public record OrderItemResponse(Guid ProductId, int Quantity, decimal UnitPrice, decimal SubTotal);
 
-    public record OrderRequest(Guid CustomerId, string ShippingAddress, string BillingAddress, string Notes, ICollection<OrderItemRequest> OrderItems);
-    public record OrderResponse(Guid OrderId, DateTime Date, Guid CustomerId, string ShippingAdress,string BillingAdress,string Notes, OrderStatus Status, decimal TotalAmount, ICollection<OrderItemResponse> OrderItems);
+    public record OrderRequest(string? CustomerId, string? ShippingAddress, string? BillingAddress, string? Notes, ICollection<OrderItemRequest> OrderItems);
+    public record OrderResponse(Guid OrderId, DateTime Date, Guid CustomerId, string ShippingAdress, string BillingAdress, string Notes, string Status, decimal TotalAmount, ICollection<OrderItemResponse> OrderItems);
+
+    public record UpdateOrderStatusRequest(string? NewStatus);
+
 }
-   //Vicente mi buen amigo otra campaña volveremos a estar contigo.
