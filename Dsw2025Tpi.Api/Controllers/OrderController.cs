@@ -47,6 +47,10 @@ public class OrderController : ControllerBase
         {
             return BadRequest(nce.Message);
         }
+        catch (FormatException fe) 
+        { 
+            return BadRequest($"Formato de GUID inválido: {fe.Message}");
+        }
         catch (Exception ex)
         {
             return StatusCode(500, $"Error interno del servidor: {ex.Message}");

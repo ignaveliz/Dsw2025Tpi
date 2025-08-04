@@ -22,7 +22,12 @@ public class OrderManagementService
 
     public async Task<OrderModel.OrderResponse?> CreateOrder(OrderModel.OrderRequest request)
     {
-        var customer = await _repository.GetById<Customer>(request.CustomerId);
+        if (string.IsNullOrEmpty(request.CustomerId) || string.IsNullOrWhiteSpace(request.CustomerId))
+            throw new ArgumentException("El ID del cliente es obligatorio.");
+
+        var customerId = Guid.Parse(request.CustomerId);
+
+        var customer = await _repository.GetById<Customer>(customerId);
         if (customer is null)
             throw new EntityNotFoundException("El cliente no existe.");
 
@@ -35,7 +40,12 @@ public class OrderManagementService
 
         foreach (var item in request.OrderItems)
         {    
-            var product = await _repository.GetById<Product>(item.ProductId);
+            if (string.IsNullOrEmpty(item.ProductId))
+                throw new ArgumentException("El ID del producto es obligatorio.");
+
+            var productId = Guid.Parse(item.ProductId);
+
+            var product = await _repository.GetById<Product>(productId);
             if (product is null)
                 throw new EntityNotFoundException($" No existe el Producto con id: {item.ProductId}.");
 
@@ -51,7 +61,7 @@ public class OrderManagementService
 
             var orderItem = new OrderItem 
             {
-                ProductId = item.ProductId,
+                ProductId = productId,
                 Quantity = item.Quantity,
                 UnitPrice = product.CurrentUnitPrice
             };
@@ -66,7 +76,7 @@ public class OrderManagementService
 
         var order = new Order
         {
-            CustomerId = request.CustomerId,
+            CustomerId = customerId,
             ShippingAddress = request.ShippingAddress,
             BillingAddress = request.BillingAddress,
             Date = DateTime.UtcNow,
