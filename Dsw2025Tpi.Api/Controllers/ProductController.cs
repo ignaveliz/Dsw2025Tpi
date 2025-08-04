@@ -1,11 +1,13 @@
 ﻿using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Dsw2025Tpi.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/products")]
 public class ProductController : ControllerBase
 {
@@ -16,6 +18,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost()]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> AddProduct([FromBody] ProductModel.ProductRequest request)
     {
         try
@@ -23,17 +26,22 @@ public class ProductController : ControllerBase
             var product = await _service.AddProduct(request);
             return Created($"/api/products/{product.Id}", product);
         }
-        catch (InvalidFieldException ie)
+        catch (ArgumentException ae)
         {
-            return BadRequest(ie.Message);
+            return BadRequest(ae.Message);
         }
         catch (DuplicatedEntityException de)
         {
             return BadRequest(de.Message);
         }
+        catch(Exception)
+        {
+            return StatusCode(500);
+        }
     }
 
     [HttpGet()]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProducts()
     {
         try
@@ -45,11 +53,16 @@ public class ProductController : ControllerBase
         {
             return NoContent();
         }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
 
     }
 
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProductById(Guid id)
     {
         try
@@ -61,10 +74,15 @@ public class ProductController : ControllerBase
         {
             return NotFound(enfe.Message);
         }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
 
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductModel.ProductRequest request)
     {
         try
@@ -80,17 +98,22 @@ public class ProductController : ControllerBase
         {
             return NotFound(nae.Message);
         }
-        catch (InvalidFieldException ife)
+        catch (ArgumentException ae)
         {
-            return BadRequest(ife.Message);
+            return BadRequest(ae.Message);
         }
         catch(DuplicatedEntityException de)
         {
             return BadRequest(de.Message);
         }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
     }
 
     [HttpPatch("{id}")]
+    [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> DisableProduct(Guid id)
     {
         try
@@ -106,6 +129,9 @@ public class ProductController : ControllerBase
         {
             return NotFound(nae.Message);
         }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+        }
     }
-
 }
