@@ -36,14 +36,31 @@ public class OrderManagementService
 
         var totalAmount = 0m;
         var orderItems = new List<OrderItem>();
+       
         var stockUpdates = new List<(Product product, int Quantity)>();
 
+        // Aquí está el cambio: una lista para rastrear los IDs que ya hemos procesado.
+        var processedProductIds = new List<Guid>();
+
         foreach (var item in request.OrderItems)
-        {    
+        {
+            // === Inicia la nueva validación de duplicados ===
+            var productId = Guid.Parse(item.ProductId);
+
+            if (processedProductIds.Contains(productId))
+            {
+                throw new ArgumentException($"No se puede crear dos item con el mismo id: {productId}");
+            }
+
+            // Si no está duplicado, lo agregamos a nuestra lista para rastrearlo.
+            processedProductIds.Add(productId);
+            // === Termina la validación === 
+
+
             if (string.IsNullOrEmpty(item.ProductId))
                 throw new ArgumentException("El ID del producto es obligatorio.");
 
-            var productId = Guid.Parse(item.ProductId);
+            //var productId = Guid.Parse(item.ProductId);
 
             var product = await _repository.GetById<Product>(productId);
             if (product is null)
