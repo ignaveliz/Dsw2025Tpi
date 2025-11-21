@@ -32,7 +32,7 @@ public class OrderController : ControllerBase
     [HttpGet()]
     [Authorize(Roles = "Usuario,Tester,Admin")]
     public async Task<IActionResult> GetOrders(
-    [FromQuery] string? status,
+    [FromQuery] OrderStatus? status,
     [FromQuery] Guid? customerId,
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)

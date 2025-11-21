@@ -39,7 +39,7 @@ public class OrderManagementService
         if (customer is null)
         {
             _logger.LogError("Cliente con ID {CustomerId} no encontrado.", request.CustomerId);
-            throw new EntityNotFoundException("El cliente no existe.");
+            throw new ArgumentException("El cliente no existe.");
         }
 
         if (string.IsNullOrWhiteSpace(request.ShippingAddress) || string.IsNullOrWhiteSpace(request.BillingAddress))
@@ -66,7 +66,7 @@ public class OrderManagementService
             if (product is null)
             {
                 _logger.LogInformation("Producto con ID {ProductId} no encontrado.", item.ProductId);
-                throw new EntityNotFoundException($" No existe el Producto con id: {item.ProductId}.");
+                throw new ArgumentException($" No existe el Producto con id: {item.ProductId}.");
             }
             if (!product.IsActive)
             {
@@ -101,7 +101,7 @@ public class OrderManagementService
         if (orderItems.Count == 0)
         {
             _logger.LogError("No se han agregado productos al pedido.");
-            throw new NoContentException("No se han agregado productos al pedido.");
+            throw new ArgumentException("No se han agregado productos al pedido.");
         }
 
         var order = new Order
@@ -151,96 +151,57 @@ public class OrderManagementService
         );
     }
 
-    public async Task<IEnumerable<OrderModel.OrderResponse>> GetOrders(string? status, Guid? customerId, int pageNumber, int pageSize)
+    public async Task<IEnumerable<OrderModel.OrderResponse>> GetOrders(OrderStatus? status, Guid? customerId, int pageNumber, int pageSize)
     {
         _logger.LogInformation("Obteniendo órdenes con filtros - Estado: {Status}, ClienteID: {CustomerId}, Página: {PageNumber}, Tamaño de página: {PageSize}", status, customerId, pageNumber, pageSize);
-        if (pageNumber < 1)
-            throw new ArgumentException("El numero de pagina debe ser mayor o igual a 1.");
+        var query = await _repository.GetAll<Order>("OrderItems.Product");
 
-        if (pageSize < 1 || pageSize > 100)
-            throw new ArgumentException("El tamaño de pagina debe estar entre 1 y 100.");
-
-        var orders = await _repository.GetAll<Order>();
-        var items = await _repository.GetAll<OrderItem>();
-
-        if (orders is null || !orders.Any())
-        {
-            _logger.LogInformation("No hay órdenes cargadas en el sistema.");
-            throw new NoContentException("No hay órdenes cargadas en el sistema.");
-        }
-
-        if (!string.IsNullOrEmpty(status))
-        {
-            if (!Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
-            {
-                _logger.LogError("El estado '{Status}' no es un estado de orden válido.", status);
-                throw new ArgumentException($"El estado '{status}' no es un estado de orden válido.");
-            }
-
-            orders = orders.Where(o => o.Status == parsedStatus).ToList();
-        }
-
+        if (status.HasValue)
+            query = query!.Where(o => o.Status == status.Value);
         if (customerId.HasValue)
-        {
-            orders = orders.Where(o => o.CustomerId == customerId.Value).ToList();
-        }
+            query = query!.Where(o => o.CustomerId == customerId.Value);
 
-        var paginatedOrders = orders
-            .Skip((pageNumber - 1) * pageSize)
+        var pagedOrders = query!.Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToList();
 
-        var orderResponses = paginatedOrders.Select(order =>
+        return pagedOrders.Select(o =>
         {
-            var orderItems = items!
-                .Where(i => i.OrderId == order.Id)
-                .Select(i => new OrderModel.OrderItemResponse(
-                    i.ProductId,
-                    i.Quantity,
-                    i.UnitPrice,
-                    i.SubTotal))
-                .ToList();
-
+            var orderItems = o.OrderItems!.Select(i => new OrderModel.OrderItemResponse(
+                i.ProductId,
+                i.Quantity,
+                i.UnitPrice,
+                i.SubTotal)).ToList();
             var totalAmount = orderItems.Sum(i => i.SubTotal);
-
             return new OrderModel.OrderResponse(
-                order.Id,
-                order.Date,
-                order.CustomerId,
-                order.ShippingAddress!,
-                order.BillingAddress!,
-                order.Notes!,
-                order.Status.ToString(),
+                o.Id,
+                o.Date,
+                o.CustomerId,
+                o.ShippingAddress!,
+                o.BillingAddress!,
+                o.Notes!,
+                o.Status.ToString(),
                 totalAmount,
                 orderItems
             );
-        }).ToList();
-        _logger.LogInformation("Órdenes obtenidas exitosamente. Total de órdenes: {TotalOrders}", orderResponses.Count);
-        return orderResponses;
+        });
     }
     public async Task<OrderModel.OrderResponse> GetOrderById(Guid id)
     {
         _logger.LogInformation("Obteniendo orden con ID {OrderId}", id);
-        var order = await _repository.GetById<Order>(id);
+        var order = await _repository.GetById<Order>(id, "OrderItems.Product");
         if (order is null)
         {
             _logger.LogError("Orden con ID {OrderId} no encontrada.", id);
             throw new EntityNotFoundException($"No existe una orden con el ID {id}.");
         }
 
-        var items = await _repository.GetAll<OrderItem>();
-        var orderItems = items!
-            .Where(i => i.OrderId == order.Id)
-            .Select(i => new OrderModel.OrderItemResponse(
-                i.ProductId,
-                i.Quantity,
-                i.UnitPrice,
-                i.SubTotal))
-            .ToList();
-
-        var totalAmount = orderItems.Sum(i => i.SubTotal);
-
-        _logger.LogInformation("Orden con ID {OrderId} obtenida exitosamente.", id);
+        var orderItems = order.OrderItems!.Select(i => new OrderModel.OrderItemResponse(
+            i.ProductId,
+            i.Quantity,
+            i.UnitPrice,
+            i.SubTotal
+            )).ToList();
 
         return new OrderModel.OrderResponse(
             order.Id,
@@ -250,7 +211,7 @@ public class OrderManagementService
             order.BillingAddress!,
             order.Notes!,
             order.Status.ToString(),
-            totalAmount,
+            order.TotalAmount,
             orderItems
         );
     }

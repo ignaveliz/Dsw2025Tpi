@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Dsw2025Tpi.Api.Middleware;
 using Dsw2025Tpi.Application.Services;
 using Dsw2025Tpi.Data;
@@ -33,7 +34,10 @@ public class Program
             }
         });
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(opt => 
+        { 
+            opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(o =>
