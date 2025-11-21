@@ -1,4 +1,5 @@
 using System.Text;
+using Dsw2025Tpi.Api.Middleware;
 using Dsw2025Tpi.Application.Services;
 using Dsw2025Tpi.Data;
 using Dsw2025Tpi.Data.Helpers;
@@ -20,6 +21,17 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
+        builder.Services.AddLogging(config =>
+        {
+            config.ClearProviders();
+            config.AddConsole();
+
+            var path = builder.Configuration.GetValue<string>("LogPath");
+            if (!string.IsNullOrEmpty(path))
+            {
+                config.AddFile(path);
+            }
+        });
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -123,6 +135,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

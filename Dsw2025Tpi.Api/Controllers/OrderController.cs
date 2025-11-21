@@ -13,48 +13,20 @@ namespace Dsw2025Tpi.Api.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly OrderManagementService _service;
-    public OrderController(OrderManagementService service)
+    private readonly ILogger<OrderController> _logger;
+    public OrderController(OrderManagementService service, ILogger<OrderController> logger)
     {
         _service = service;
+        _logger = logger;
     }
 
     [HttpPost()]
     [Authorize(Roles = "Usuario,Tester")]
     public async Task<IActionResult> CreateOrder([FromBody] OrderModel.OrderRequest request)
     {
-        try
-        {
-            var order = await _service.CreateOrder(request);
-            return Created($"/api/orders/{order?.OrderId}", order);
-        }
-        catch (EntityNotFoundException nfe)
-        {
-            return BadRequest(nfe.Message);
-        }
-        catch (ArgumentException ife)
-        {
-            return BadRequest(ife.Message);
-        }
-        catch (EntityNotActive nae)
-        {
-            return BadRequest(nae.Message);
-        }
-        catch (InsufficientStockException ise)
-        {
-            return BadRequest(ise.Message);
-        }
-        catch(NoContentException nce)
-        {
-            return BadRequest(nce.Message);
-        }
-        catch (FormatException fe) 
-        { 
-            return BadRequest($"Formato de GUID inválido: {fe.Message}");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-        }
+        _logger.LogInformation("Creating a new order for CustomerId: {CustomerId}", request.CustomerId);
+        var order = await _service.CreateOrder(request);
+        return Created($"/api/orders/{order?.OrderId}", order);
     }
 
     [HttpGet()]
@@ -65,61 +37,28 @@ public class OrderController : ControllerBase
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
     {
-        try
-        {
-            var orders = await _service.GetOrders(status, customerId, pageNumber, pageSize);
-            return Ok(orders);
-        }
-        catch (NoContentException nce)
-        {
-            return StatusCode(500, $"{nce.Message}");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-        }
+        _logger.LogInformation("Retrieving orders with filters - Status: {Status}, CustomerId: {CustomerId}, PageNumber: {PageNumber}, PageSize: {PageSize}",
+            status, customerId, pageNumber, pageSize);
+        var orders = await _service.GetOrders(status, customerId, pageNumber, pageSize);
+        return Ok(orders);
     }
 
     [HttpGet("{id}")]
     [Authorize(Roles = "Usuario,Tester,Admin")]
     public async Task<IActionResult> GetOrderById(Guid id)
     {
-        try
-        {
-            var order = await _service.GetOrderById(id);
-            return Ok(order); 
-        }
-        catch (EntityNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-        }
+        _logger.LogInformation("Retrieving order with ID: {OrderId}", id);
+        var order = await _service.GetOrderById(id);
+        return Ok(order);
     }
 
     [HttpPut("{id}/status")]
     [Authorize(Roles = "Admin,Tester")]
     public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] OrderModel.UpdateOrderStatusRequest request)
     {
-        try
-        {
-            var updatedOrder = await _service.UpdateOrderStatus(id, request.NewStatus!);
-            return Ok(updatedOrder);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (EntityNotFoundException)
-        {
-            return NotFound($"No existe una orden con el ID {id}.");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-        }
+        _logger.LogInformation("Updating status for order ID: {OrderId} to new status: {NewStatus}", id, request.NewStatus);
+        var updatedOrder = await _service.UpdateOrderStatus(id, request.NewStatus!);
+        return Ok(updatedOrder);
     }
 
 }

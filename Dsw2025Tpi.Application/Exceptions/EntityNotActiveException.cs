@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions;
 
-public class EntityNotActive : ApplicationException
+public class EntityNotActiveException : ApplicationException
 {
-    public EntityNotActive(string message) : base(message)
+    public EntityNotActiveException(string message) : base(message)
     {
         
     }
