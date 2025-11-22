@@ -62,6 +62,10 @@ public class ProductsManagementService
 
     }
 
+    public async Task<ProductModel.PaginationResponse?> GetProducts(ProductModel.FilterProduct request)
+    {
+        
+    }
     public async Task<ProductModel.ProductResponse> AddProduct(ProductModel.ProductRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Sku))
