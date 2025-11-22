@@ -1,4 +1,5 @@
-﻿using Dsw2025Tpi.Application.Dtos;
+﻿using Azure.Core;
+using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +55,7 @@ public class AuthenticateController : ControllerBase
 
         var token = _jwtTokenService.GenerateToken(request.Username,role);
         _logger.LogInformation("Login exitoso para el usuario: {Username}", request.Username);
-        return Ok(new { token });
+        return Ok(new { token, role });
     }
 
     [HttpPost("register")]
@@ -72,10 +73,17 @@ public class AuthenticateController : ControllerBase
 
 
         var role = model.Role ?? "Usuario";
+        
+        role = role.First().ToString().ToUpper() + role.Substring(1).ToLower();
+
         await _userManager.AddToRoleAsync(user, role);
+
+        
+        var token = _jwtTokenService.GenerateToken(model.Username, role);
+
 
         // Opcional: enviar email de confirmación, etc.
         _logger.LogInformation("Usuario registrado correctamente: {Username} con rol {Role}", model.Username, role);
-        return Ok("Usuario registrado correctamente.");
+        return Ok(new {token,role });
     }
 }
