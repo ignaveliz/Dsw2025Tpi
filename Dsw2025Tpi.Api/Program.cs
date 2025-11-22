@@ -34,6 +34,19 @@ public class Program
             }
         });
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(name: "_myAllowSpecificOrigins",
+                policy =>
+                {
+                    policy
+                        .WithOrigins("http://localhost:5173") // tu front Vite
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials(); // si usás cookies/autenticación
+                });
+        });
+
         builder.Services.AddControllers().AddJsonOptions(opt => 
         { 
             opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -141,6 +154,8 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+        app.UseCors("_myAllowSpecificOrigins");
 
         app.UseAuthentication();
         app.UseAuthorization();
