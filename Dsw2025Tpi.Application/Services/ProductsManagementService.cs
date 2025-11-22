@@ -64,7 +64,32 @@ public class ProductsManagementService
 
     public async Task<ProductModel.PaginationResponse?> GetProducts(ProductModel.FilterProduct request)
     {
-        
+        var isActive = request.Status == "true"
+            ? (bool?)true : request.Status == "false"
+            ? (bool?)false : null;
+        _logger.LogInformation("Obteniendo lista de productos con filtros - Estado: {Status}, Busqueda: {Search}, Pagina: {PageNumber}, TamañoPagina: {PageSize}",
+            request.Status, request.Search, request.PageNumber, request.PageSize);
+
+        var activeProducts = await _repository.GetFiltered<Product>(p => (
+            (isActive == null || p.IsActive == isActive) && string.IsNullOrEmpty(request.Search) || p.Name!.Contains(request.Search!)
+        ));
+
+        if (activeProducts is null || !activeProducts.Any()) throw new NoContentException("No products were found");
+
+        var products = activeProducts.Select(p => new ProductModel.ProductResponse(
+            p.Id,
+            p.Sku!,
+            p.InternalCode!,
+            p.Name!,
+            p.Description!,
+            p.CurrentUnitPrice,
+            p.StockQuantity,
+            p.IsActive))
+            .OrderBy(p => p.Sku)
+            .Skip((request.PageNumber - 1) * request.PageSize ?? 0)
+            .Take(request.PageSize ?? activeProducts.Count());
+
+        return new ProductModel.PaginationResponse(products.ToList(), activeProducts.Count());
     }
     public async Task<ProductModel.ProductResponse> AddProduct(ProductModel.ProductRequest request)
     {

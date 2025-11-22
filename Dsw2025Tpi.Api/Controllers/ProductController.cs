@@ -37,6 +37,20 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("admin")]
+    [Authorize(Roles = "Admin,Tester")]
+    public async Task<IActionResult> GetAuthProducts([FromQuery] ProductModel.FilterProduct request)
+    {
+        _logger.LogInformation("Solicitud recibida GET /api/products/admin");
+        var products = await _service.GetProducts(request);
+        if (products == null)
+        {
+            Response.Headers.Append("X-Message", "There are no active products");
+            return NoContent();
+        }
+        return Ok(products);
+    }
+
 
     [HttpGet("{id}")]
     [AllowAnonymous]
