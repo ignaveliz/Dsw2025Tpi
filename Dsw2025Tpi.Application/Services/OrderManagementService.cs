@@ -9,6 +9,7 @@ using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Dsw2025Tpi.Application.Services;
 
@@ -151,41 +152,75 @@ public class OrderManagementService
         );
     }
 
-    public async Task<IEnumerable<OrderModel.OrderResponse>> GetOrders(OrderStatus? status, Guid? customerId, int pageNumber, int pageSize)
+    public async Task<OrderModel.PaginationResponse> GetOrders(OrderModel.FilterOrder request)
     {
-        _logger.LogInformation("Obteniendo órdenes con filtros - Estado: {Status}, ClienteID: {CustomerId}, Página: {PageNumber}, Tamaño de página: {PageSize}", status, customerId, pageNumber, pageSize);
+        _logger.LogInformation(
+            "Obteniendo órdenes con filtros - Estado: {Status}, ClienteID: {CustomerId}, Página: {PageNumber}, Tamaño de página: {PageSize}",
+            request.Status,
+            request.CustomerId,
+            request.PageNumber,
+            request.PageSize
+        );
+
         var query = await _repository.GetAll<Order>("OrderItems.Product");
 
-        if (status.HasValue)
-            query = query!.Where(o => o.Status == status.Value);
-        if (customerId.HasValue)
-            query = query!.Where(o => o.CustomerId == customerId.Value);
+        if (!string.IsNullOrWhiteSpace(request.Status) &&
+            !string.Equals(request.Status, "all", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(request.Status, "todos", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Enum.TryParse<OrderStatus>(request.Status, ignoreCase: true, out var statusEnum))
+            {
+                query = query!.Where(o => o.Status == statusEnum);
+            }
+            else
+            {
+                _logger.LogWarning("Estado inválido recibido: {Status}. Se ignora el filtro de estado.", request.Status);
+            }
+        }
 
-        var pagedOrders = query!.Skip((pageNumber - 1) * pageSize)
+
+        if (request.CustomerId.HasValue)
+        {
+            query = query!.Where(o => o.CustomerId == request.CustomerId.Value);
+        }
+
+        var total = query!.Count();
+
+        var pageNumber = request.PageNumber ?? 1;
+        var pageSize = request.PageSize ?? total;
+
+        var orders = query
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToList();
 
-        return pagedOrders.Select(o =>
+        var orderResponses = orders.Select(o =>
         {
             var orderItems = o.OrderItems!.Select(i => new OrderModel.OrderItemResponse(
                 i.ProductId,
                 i.Quantity,
                 i.UnitPrice,
-                i.SubTotal)).ToList();
+                i.SubTotal
+            )).ToList();
+
             var totalAmount = orderItems.Sum(i => i.SubTotal);
+
             return new OrderModel.OrderResponse(
                 o.Id,
                 o.Date,
                 o.CustomerId,
                 o.ShippingAddress!,
                 o.BillingAddress!,
-                o.Notes!,
+                o.Notes ?? string.Empty,
                 o.Status.ToString(),
                 totalAmount,
                 orderItems
             );
-        });
+        }).ToList();
+
+        return new OrderModel.PaginationResponse(orderResponses, total);
     }
+
     public async Task<OrderModel.OrderResponse> GetOrderById(Guid id)
     {
         _logger.LogInformation("Obteniendo orden con ID {OrderId}", id);

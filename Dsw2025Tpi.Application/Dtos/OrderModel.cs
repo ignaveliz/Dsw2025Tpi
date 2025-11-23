@@ -17,4 +17,8 @@ public record OrderModel
 
     public record UpdateOrderStatusRequest(string? NewStatus);
 
+    public record PaginationResponse(List<OrderResponse> Orders, int Total);
+
+    public record FilterOrder(string? Status, Guid? CustomerId, int? PageNumber, int? PageSize);
+
 }

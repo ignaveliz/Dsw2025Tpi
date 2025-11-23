@@ -31,15 +31,11 @@ public class OrderController : ControllerBase
 
     [HttpGet()]
     [Authorize(Roles = "Usuario,Tester,Admin")]
-    public async Task<IActionResult> GetOrders(
-    [FromQuery] OrderStatus? status,
-    [FromQuery] Guid? customerId,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetOrders([FromQuery] OrderModel.FilterOrder request)
     {
         _logger.LogInformation("Retrieving orders with filters - Status: {Status}, CustomerId: {CustomerId}, PageNumber: {PageNumber}, PageSize: {PageSize}",
-            status, customerId, pageNumber, pageSize);
-        var orders = await _service.GetOrders(status, customerId, pageNumber, pageSize);
+            request.Status, request.CustomerId, request.PageNumber, request.PageSize);
+        var orders = await _service.GetOrders(request);
         return Ok(orders);
     }
 
