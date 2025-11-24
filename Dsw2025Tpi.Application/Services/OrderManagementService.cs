@@ -143,6 +143,7 @@ public class OrderManagementService
             order.Id,
             order.Date,
             order.CustomerId,
+            customer.Name!, 
             order.ShippingAddress,
             order.BillingAddress,
             order.Notes,
@@ -178,11 +179,8 @@ public class OrderManagementService
             }
         }
 
-
         if (request.CustomerId.HasValue)
-        {
             query = query!.Where(o => o.CustomerId == request.CustomerId.Value);
-        }
 
         var total = query!.Count();
 
@@ -194,7 +192,9 @@ public class OrderManagementService
             .Take(pageSize)
             .ToList();
 
-        var orderResponses = orders.Select(o =>
+        var orderResponses = new List<OrderModel.OrderResponse>();
+
+        foreach (var o in orders)
         {
             var orderItems = o.OrderItems!.Select(i => new OrderModel.OrderItemResponse(
                 i.ProductId,
@@ -205,18 +205,22 @@ public class OrderManagementService
 
             var totalAmount = orderItems.Sum(i => i.SubTotal);
 
-            return new OrderModel.OrderResponse(
+            var customer = await _repository.GetById<Customer>(o.CustomerId);
+            var customerName = customer?.Name ?? "Desconocido";
+
+            orderResponses.Add(new OrderModel.OrderResponse(
                 o.Id,
                 o.Date,
                 o.CustomerId,
+                customerName,
                 o.ShippingAddress!,
                 o.BillingAddress!,
                 o.Notes ?? string.Empty,
                 o.Status.ToString(),
                 totalAmount,
                 orderItems
-            );
-        }).ToList();
+            ));
+        }
 
         return new OrderModel.PaginationResponse(orderResponses, total);
     }
@@ -238,10 +242,15 @@ public class OrderManagementService
             i.SubTotal
             )).ToList();
 
+        var customerName = await _repository.GetById<Customer>(order.CustomerId) is Customer customer
+            ? customer.Name
+            : "Desconocido";
+
         return new OrderModel.OrderResponse(
             order.Id,
             order.Date,
             order.CustomerId,
+            customerName!,
             order.ShippingAddress!,
             order.BillingAddress!,
             order.Notes!,
