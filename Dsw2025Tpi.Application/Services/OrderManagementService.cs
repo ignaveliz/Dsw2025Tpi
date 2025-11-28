@@ -156,38 +156,44 @@ public class OrderManagementService
     public async Task<OrderModel.PaginationResponse> GetOrders(OrderModel.FilterOrder request)
     {
         _logger.LogInformation(
-            "Obteniendo órdenes con filtros - Estado: {Status}, ClienteID: {CustomerId}, Página: {PageNumber}, Tamaño de página: {PageSize}",
+            "Obteniendo órdenes con filtros - Estado: {Status}, ClienteNombre: {CustomerName}, Página: {PageNumber}, Tamaño de página: {PageSize}",
             request.Status,
-            request.CustomerId,
+            request.CustomerName,
             request.PageNumber,
             request.PageSize
         );
 
-        var query = await _repository.GetAll<Order>("OrderItems.Product");
+        OrderStatus? status = null;
 
         if (!string.IsNullOrWhiteSpace(request.Status) &&
             !string.Equals(request.Status, "all", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(request.Status, "todos", StringComparison.OrdinalIgnoreCase))
         {
-            if (Enum.TryParse<OrderStatus>(request.Status, ignoreCase: true, out var statusEnum))
+            if (!Enum.TryParse<OrderStatus>(request.Status, true, out var parsedStatus))
             {
-                query = query!.Where(o => o.Status == statusEnum);
+                parsedStatus = default;
             }
-            else
-            {
-                _logger.LogWarning("Estado inválido recibido: {Status}. Se ignora el filtro de estado.", request.Status);
-            }
+            status = parsedStatus;
         }
 
-        if (request.CustomerId.HasValue)
-            query = query!.Where(o => o.CustomerId == request.CustomerId.Value);
+        var customerName = request.CustomerName?.Trim().ToLower();
+
+        var query = await _repository.GetFiltered<Order>(
+            o =>
+                (status == null || o.Status == status) &&
+                (string.IsNullOrEmpty(customerName) ||
+                 o.Customer != null &&
+                 o.Customer.Name != null &&
+                 o.Customer.Name.ToLower().Contains(customerName)),
+            "OrderItems.Product"
+        );
 
         var total = query!.Count();
 
         var pageNumber = request.PageNumber ?? 1;
         var pageSize = request.PageSize ?? total;
 
-        var orders = query
+        var orders = query!
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToList();
@@ -206,13 +212,13 @@ public class OrderManagementService
             var totalAmount = orderItems.Sum(i => i.SubTotal);
 
             var customer = await _repository.GetById<Customer>(o.CustomerId);
-            var customerName = customer?.Name ?? "Desconocido";
+            var customerNameResult = customer?.Name ?? "Desconocido";
 
             orderResponses.Add(new OrderModel.OrderResponse(
                 o.Id,
                 o.Date,
                 o.CustomerId,
-                customerName,
+                customerNameResult,
                 o.ShippingAddress!,
                 o.BillingAddress!,
                 o.Notes ?? string.Empty,
@@ -224,6 +230,7 @@ public class OrderManagementService
 
         return new OrderModel.PaginationResponse(orderResponses, total);
     }
+
 
     public async Task<OrderModel.OrderResponse> GetOrderById(Guid id)
     {

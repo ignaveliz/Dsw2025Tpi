@@ -33,8 +33,8 @@ public class OrderController : ControllerBase
     [Authorize(Roles = "Usuario,Tester,Admin")]
     public async Task<IActionResult> GetOrders([FromQuery] OrderModel.FilterOrder request)
     {
-        _logger.LogInformation("Retrieving orders with filters - Status: {Status}, CustomerId: {CustomerId}, PageNumber: {PageNumber}, PageSize: {PageSize}",
-            request.Status, request.CustomerId, request.PageNumber, request.PageSize);
+        _logger.LogInformation("Retrieving orders with filters - Status: {Status}, CustomerName: {CustomerName}, PageNumber: {PageNumber}, PageSize: {PageSize}",
+            request.Status, request.CustomerName, request.PageNumber, request.PageSize);
         var orders = await _service.GetOrders(request);
         return Ok(orders);
     }
