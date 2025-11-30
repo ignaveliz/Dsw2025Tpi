@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Services;
+using Dsw2025Tpi.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,13 +11,13 @@ namespace Dsw2025Tpi.Api.Controllers;
 [Route("api/auth")]
 public class AuthenticateController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
     private readonly JwtTokenService _jwtTokenService;
     private readonly ILogger<AuthenticateController> _logger;
 
-    public AuthenticateController(UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager,
+    public AuthenticateController(UserManager<User> userManager,
+        SignInManager<User> signInManager,
         JwtTokenService jwtTokenService,
         ILogger<AuthenticateController> logger)
     {
@@ -62,7 +63,7 @@ public class AuthenticateController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         _logger.LogInformation("Intento de registro para el usuario: {Username}", model.Username);
-        var user = new IdentityUser { UserName = model.Username, Email = model.Email };
+        var user = new User { UserName = model.Username, Email = model.Email };
         var result = await _userManager.CreateAsync(user, model.Password);
         _logger.LogInformation("Resultado del registro para el usuario: {Username} - Succeeded: {Succeeded}", model.Username, result.Succeeded);
         if (!result.Succeeded)

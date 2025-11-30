@@ -14,48 +14,48 @@ public class EfRepository: IRepository
         _context = context;
     }
 
-    public async Task<T> Add<T>(T entity) where T : EntityBase
+    public async Task<T> Add<T>(T entity) where T : class, IEntityBase
     {
         await _context.AddAsync(entity);
         await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<T> Delete<T>(T entity) where T : EntityBase
+    public async Task<T> Delete<T>(T entity) where T : class, IEntityBase
     {
         _context.Remove(entity);
         await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<T?> First<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : EntityBase
+    public async Task<T?> First<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : class, IEntityBase
     {
         return await Include(_context.Set<T>(), include).FirstOrDefaultAsync(predicate);
     }
 
-    public async Task<IEnumerable<T>?> GetAll<T>(params string[] include) where T : EntityBase
+    public async Task<IEnumerable<T>?> GetAll<T>(params string[] include) where T : class, IEntityBase
     {
         return await Include(_context.Set<T>(), include).ToListAsync();
     }
 
-    public async Task<T?> GetById<T>(Guid id, params string[] include) where T : EntityBase
+    public async Task<T?> GetById<T>(Guid id, params string[] include) where T : class, IEntityBase
     {
         return await Include(_context.Set<T>(), include).FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<IEnumerable<T>?> GetFiltered<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : EntityBase
+    public async Task<IEnumerable<T>?> GetFiltered<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : class, IEntityBase
     {
         return await Include(_context.Set<T>(), include).Where(predicate).ToListAsync();
     }
 
-    public async Task<T> Update<T>(T entity) where T : EntityBase
+    public async Task<T> Update<T>(T entity) where T : class, IEntityBase
     {
         _context.Update(entity);
         await _context.SaveChangesAsync();
         return entity;
     }
 
-    private static IQueryable<T> Include<T>(IQueryable<T> query, string[] includes) where T : EntityBase
+    private static IQueryable<T> Include<T>(IQueryable<T> query, string[] includes) where T : class, IEntityBase
     {
         var includedQuery = query;
 

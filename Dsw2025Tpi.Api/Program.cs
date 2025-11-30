@@ -83,7 +83,7 @@ public class Program
                 });
         });
         builder.Services.AddHealthChecks();
-        builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        builder.Services.AddIdentity<User, IdentityRole>(options =>
         {
             options.Password = new PasswordOptions
             {
@@ -163,6 +163,12 @@ public class Program
         app.MapControllers();
         
         app.MapHealthChecks("/healthcheck");
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            await IdentitySeeder.SeedRolesAsync(services);
+        }
 
         app.Run();
     }

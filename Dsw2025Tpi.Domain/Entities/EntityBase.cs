@@ -1,6 +1,8 @@
-﻿namespace Dsw2025Tpi.Domain.Entities;
+﻿using Dsw2025Tpi.Domain.Interfaces;
 
-public abstract class EntityBase
+namespace Dsw2025Tpi.Domain.Entities;
+
+public abstract class EntityBase : IEntityBase
 {
     protected EntityBase()
     {
