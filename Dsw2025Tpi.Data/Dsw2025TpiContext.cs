@@ -36,9 +36,9 @@ public class Dsw2025TpiContext : DbContext
         modelBuilder.Entity<Order>(entity =>
         {
             entity.Property(o => o.Status).HasDefaultValue(OrderStatus.Pending);
-            entity.HasOne(o => o.Customer)
+            entity.HasOne(o => o.User)
                   .WithMany(c => c.Orders)
-                  .HasForeignKey(o => o.CustomerId);
+                  .HasForeignKey(o => o.UserID);
 
             entity.Ignore(o => o.TotalAmount);
         });

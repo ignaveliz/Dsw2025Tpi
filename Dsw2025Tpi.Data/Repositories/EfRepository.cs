@@ -7,9 +7,9 @@ namespace Dsw2025Tpi.Data.Repositories;
 
 public class EfRepository: IRepository
 {
-    private readonly Dsw2025TpiContext _context;
+    private readonly AuthenticateContext _context;
 
-    public EfRepository(Dsw2025TpiContext context)
+    public EfRepository(AuthenticateContext context)
     {
         _context = context;
     }

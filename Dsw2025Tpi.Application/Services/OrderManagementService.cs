@@ -36,7 +36,7 @@ public class OrderManagementService
 
         var customerId = Guid.Parse(request.CustomerId);
 
-        var customer = await _repository.GetById<Customer>(customerId);
+        var customer = await _repository.First<User>(u => u.Id.Equals(request.CustomerId));
         if (customer is null)
         {
             _logger.LogError("Cliente con ID {CustomerId} no encontrado.", request.CustomerId);
@@ -107,7 +107,7 @@ public class OrderManagementService
 
         var order = new Order
         {
-            CustomerId = customerId,
+            UserID = customerId.ToString(),
             ShippingAddress = request.ShippingAddress,
             BillingAddress = request.BillingAddress,
             Date = DateTime.UtcNow,
@@ -142,8 +142,8 @@ public class OrderManagementService
         return new OrderModel.OrderResponse(
             order.Id,
             order.Date,
-            order.CustomerId,
-            customer.Name!, 
+            Guid.Parse(order.UserID),
+            customer.UserName!, 
             order.ShippingAddress,
             order.BillingAddress,
             order.Notes,
@@ -182,9 +182,9 @@ public class OrderManagementService
             o =>
                 (status == null || o.Status == status) &&
                 (string.IsNullOrEmpty(customerName) ||
-                 o.Customer != null &&
-                 o.Customer.Name != null &&
-                 o.Customer.Name.ToLower().Contains(customerName)),
+                 o.User != null &&
+                 o.User.UserName != null &&
+                 o.User.UserName.ToLower().Contains(customerName)),
             "OrderItems.Product"
         );
 
@@ -211,13 +211,13 @@ public class OrderManagementService
 
             var totalAmount = orderItems.Sum(i => i.SubTotal);
 
-            var customer = await _repository.GetById<Customer>(o.CustomerId);
-            var customerNameResult = customer?.Name ?? "Desconocido";
+            var user = await _repository.First<User>(u => u.Id.Equals(o.UserID));
+            var customerNameResult = user?.UserName ?? "Desconocido";
 
             orderResponses.Add(new OrderModel.OrderResponse(
                 o.Id,
                 o.Date,
-                o.CustomerId,
+                Guid.Parse(o.UserID!),
                 customerNameResult,
                 o.ShippingAddress!,
                 o.BillingAddress!,
@@ -249,14 +249,14 @@ public class OrderManagementService
             i.SubTotal
             )).ToList();
 
-        var customerName = await _repository.GetById<Customer>(order.CustomerId) is Customer customer
+        var customerName = await _repository.GetById<Customer>(Guid.Parse(order.UserID!)) is Customer customer
             ? customer.Name
             : "Desconocido";
 
         return new OrderModel.OrderResponse(
             order.Id,
             order.Date,
-            order.CustomerId,
+            Guid.Parse(order.UserID!),
             customerName!,
             order.ShippingAddress!,
             order.BillingAddress!,

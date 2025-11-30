@@ -2,75 +2,153 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dsw2025Tpi.Data;
-
-public class AuthenticateContext: IdentityDbContext<User>
+namespace Dsw2025Tpi.Data
 {
-    public AuthenticateContext(DbContextOptions<AuthenticateContext> options) : base(options)
+    // Contexto principal: Identity + dominio
+    public class AuthenticateContext : IdentityDbContext<User>
     {
-    }
-
-    public DbSet<Product> Products => Set<Product>();
-    public DbSet<Customer> Customers => Set<Customer>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-
-        builder.Entity<User>(b => { b.ToTable("Usuarios"); });
-        builder.Entity<IdentityRole>(b => { b.ToTable("Roles"); });
-        builder.Entity<IdentityUserRole<string>>(b => { b.ToTable("UsuariosRoles"); });
-        builder.Entity<IdentityUserClaim<string>>(b => { b.ToTable("UsuariosClaims"); });
-        builder.Entity<IdentityUserLogin<string>>(b => { b.ToTable("UsuariosLogins"); });
-        builder.Entity<IdentityRoleClaim<string>>(b => { b.ToTable("RolesClaims"); });
-        builder.Entity<IdentityUserToken<string>>(b => { b.ToTable("UsuariosTokens"); });
-
-        builder.Entity<Product>(entity =>
+        public AuthenticateContext(DbContextOptions<AuthenticateContext> options)
+            : base(options)
         {
-            entity.Property(p => p.Sku).IsRequired().HasMaxLength(20);
-            entity.HasIndex(p => p.Sku).IsUnique();
-            entity.Property(p => p.Name).IsRequired().HasMaxLength(60);
-            entity.Property(p => p.CurrentUnitPrice).IsRequired().HasPrecision(15, 2);
-        });
+        }
 
-        builder.Entity<Customer>(entity =>
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<Customer> Customers => Set<Customer>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            entity.Property(c => c.Email).IsRequired().HasMaxLength(150);
-            entity.Property(c => c.Name).IsRequired().HasMaxLength(50);
-        });
+            base.OnModelCreating(builder);
 
-        builder.Entity<Order>(entity =>
-        {
-            entity.Property(o => o.Status).HasDefaultValue(OrderStatus.Pending);
-            entity.HasOne(o => o.User)
-                  .WithMany(c => c.Orders)
-                  .HasForeignKey(o => o.UserID);
+            // ====== Tablas de Identity renombradas ======
 
-            entity.Ignore(o => o.TotalAmount);
-        });
+            // Usuarios (User de Identity)
+            builder.Entity<User>(b =>
+            {
+                b.ToTable("Usuarios");
+            });
 
-        builder.Entity<OrderItem>(entity =>
-        {
-            entity.Property(i => i.UnitPrice).IsRequired().HasPrecision(15, 2);
-            entity.Property(i => i.Quantity).IsRequired();
+            // Roles
+            builder.Entity<IdentityRole>(b =>
+            {
+                b.ToTable("Roles");
+            });
 
-            entity.HasOne(i => i.Product)
-                  .WithMany(p => p.OrderItems)
-                  .HasForeignKey(i => i.ProductId);
+            // UsuariosRoles (UserRole)
+            builder.Entity<IdentityUserRole<string>>(b =>
+            {
+                b.ToTable("UsuariosRoles");
+            });
 
-            entity.HasOne(i => i.Order)
-                  .WithMany(o => o.OrderItems)
-                  .HasForeignKey(i => i.OrderId);
+            // Claims de usuario
+            builder.Entity<IdentityUserClaim<string>>(b =>
+            {
+                b.ToTable("UsuariosClaims");
+            });
 
-            entity.Ignore(i => i.SubTotal);
-        });
+            // Logins externos
+            builder.Entity<IdentityUserLogin<string>>(b =>
+            {
+                b.ToTable("UsuariosLogins");
+            });
+
+            // Claims de rol
+            builder.Entity<IdentityRoleClaim<string>>(b =>
+            {
+                b.ToTable("RolesClaims");
+            });
+
+            // Tokens de usuario
+            builder.Entity<IdentityUserToken<string>>(b =>
+            {
+                b.ToTable("UsuariosTokens");
+            });
+
+            // ====== Configuración dominio ======
+
+            // PRODUCT
+            builder.Entity<Product>(entity =>
+            {
+                entity.ToTable("Products");
+
+                entity.Property(p => p.Sku)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.HasIndex(p => p.Sku)
+                      .IsUnique();
+
+                entity.Property(p => p.Name)
+                      .IsRequired()
+                      .HasMaxLength(60);
+
+                entity.Property(p => p.CurrentUnitPrice)
+                      .IsRequired()
+                      .HasPrecision(15, 2);
+            });
+
+            // CUSTOMER (queda suelto, ya no está ligado a Orders)
+            builder.Entity<Customer>(entity =>
+            {
+                entity.ToTable("Customers");
+
+                entity.Property(c => c.Email)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(c => c.Name)
+                      .IsRequired()
+                      .HasMaxLength(50);
+            });
+
+            // ORDER -> ahora solo FK a User (Usuarios)
+            builder.Entity<Order>(entity =>
+            {
+                entity.ToTable("Orders");
+
+                // Valor por defecto de estado
+                entity.Property(o => o.Status)
+                      .HasDefaultValue(OrderStatus.Pending);
+
+                // Relación: Order.UserID -> User.Id (tabla Usuarios)
+                entity.HasOne(o => o.User)
+                      .WithMany(u => u.Orders)
+                      .HasForeignKey(o => o.UserID)
+                      .IsRequired();
+
+                // Campo calculado en memoria
+                entity.Ignore(o => o.TotalAmount);
+            });
+
+            // ORDER ITEM
+            builder.Entity<OrderItem>(entity =>
+            {
+                entity.ToTable("OrderItems");
+
+                entity.Property(i => i.UnitPrice)
+                      .IsRequired()
+                      .HasPrecision(15, 2);
+
+                entity.Property(i => i.Quantity)
+                      .IsRequired();
+
+                // FK a Product
+                entity.HasOne(i => i.Product)
+                      .WithMany(p => p.OrderItems)
+                      .HasForeignKey(i => i.ProductId)
+                      .IsRequired();
+
+                // FK a Order
+                entity.HasOne(i => i.Order)
+                      .WithMany(o => o.OrderItems)
+                      .HasForeignKey(i => i.OrderId)
+                      .IsRequired();
+
+                // Subtotal calculado en código
+                entity.Ignore(i => i.SubTotal);
+            });
+        }
     }
 }

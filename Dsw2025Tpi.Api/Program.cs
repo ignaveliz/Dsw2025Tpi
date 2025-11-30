@@ -117,14 +117,14 @@ public class Program
                 };
             });
 
-        builder.Services.AddDbContext<Dsw2025TpiContext>(options => 
-        {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025TpiEntities"));
-            options.UseSeeding((c, t) =>
-            {
-                ((Dsw2025TpiContext)c).Seedwork<Customer>("Sources\\customers.json");
-            });
-        });
+        //builder.Services.AddDbContext<Dsw2025TpiContext>(options => 
+        //{
+        //    options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025TpiEntities"));
+        //    options.UseSeeding((c, t) =>
+        //    {
+        //        ((Dsw2025TpiContext)c).Seedwork<Customer>("Sources\\customers.json");
+        //    });
+        //});
 
         builder.Services.AddDbContext<AuthenticateContext>(options =>
         {
