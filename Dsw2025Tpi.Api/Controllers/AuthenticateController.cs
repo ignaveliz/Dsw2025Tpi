@@ -35,14 +35,14 @@ public class AuthenticateController : ControllerBase
         if (user == null)
         {
             _logger.LogWarning("Usuario no encontrado: {Username}", request.Username);
-            return Unauthorized("Usuario o contraseña incorrectos");
+            return Unauthorized(new { code = 1000,message = "Usuario o contraseña incorrectos" });
         }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
         if (!result.Succeeded)
         {
             _logger.LogWarning("Contraseña incorrecta para el usuario: {Username}", request.Username);
-            return Unauthorized("Usuario o contraseña incorrectos");
+            return Unauthorized(new { code = 1002, message = "Usuario o contraseña incorrectos" });
         }
 
         var roles = await _userManager.GetRolesAsync(user);
@@ -56,7 +56,10 @@ public class AuthenticateController : ControllerBase
 
         var token = _jwtTokenService.GenerateToken(request.Username,role);
         _logger.LogInformation("Login exitoso para el usuario: {Username}", request.Username);
-        return Ok(new { token, role });
+
+        var userID = user.Id;
+
+        return Ok(new { token, role, userID });
     }
 
     [HttpPost("register")]
@@ -82,9 +85,10 @@ public class AuthenticateController : ControllerBase
         
         var token = _jwtTokenService.GenerateToken(model.Username, role);
 
+        var userID = user.Id;
 
         // Opcional: enviar email de confirmación, etc.
         _logger.LogInformation("Usuario registrado correctamente: {Username} con rol {Role}", model.Username, role);
-        return Ok(new {token,role });
+        return Ok(new {token, role, userID });
     }
 }
