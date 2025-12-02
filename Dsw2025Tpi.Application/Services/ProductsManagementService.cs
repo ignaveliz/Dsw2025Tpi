@@ -118,7 +118,7 @@ public class ProductsManagementService
         if (exist != null)
         { 
             _logger.LogError("Ya existe un producto con el Sku {Sku}", request.Sku);
-            throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}");
+            throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}","3000");
         }
         var product = new Product(request.Sku, request.InternalCode!, request.Name, request.Description!, request.CurrentUnitPrice, request.StockQuantity);
         await _repository.Add(product);

@@ -29,16 +29,22 @@ public class ExceptionHandlingMiddleware
     {
         HttpStatusCode status;
         string message;
+        string? code = null;
 
         switch(exception)
         {
             case ArgumentException or
                 FormatException or
-                DuplicatedEntityException or
                 EntityNotActiveException or
                 InsufficientStockException:
                 status = HttpStatusCode.BadRequest;
                 message = exception.Message;
+                break;
+
+            case DuplicatedEntityException ex:
+                status = HttpStatusCode.BadRequest;
+                message = exception.Message;
+                code = ex.Code;
                 break;
 
             case EntityNotFoundException:
@@ -62,7 +68,7 @@ public class ExceptionHandlingMiddleware
                 break;
         }
 
-        var result = System.Text.Json.JsonSerializer.Serialize(new { error = message });
+        var result = System.Text.Json.JsonSerializer.Serialize(new { error = message, code = code });
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)status;
         return context.Response.WriteAsync(result);
