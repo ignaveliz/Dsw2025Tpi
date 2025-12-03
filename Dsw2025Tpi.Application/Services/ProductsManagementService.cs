@@ -67,12 +67,14 @@ public class ProductsManagementService
         var isActive = request.Status == "true"
             ? (bool?)true : request.Status == "false"
             ? (bool?)false : null;
+
         _logger.LogInformation("Obteniendo lista de productos con filtros - Estado: {Status}, Busqueda: {Search}, Pagina: {PageNumber}, TamañoPagina: {PageSize}",
             request.Status, request.Search, request.PageNumber, request.PageSize);
 
-        var activeProducts = await _repository.GetFiltered<Product>(p => (
-            (isActive == null || p.IsActive == isActive) && string.IsNullOrEmpty(request.Search) || p.Name!.Contains(request.Search!)
-        ));
+        var activeProducts = await _repository.GetFiltered<Product>(p =>
+            (isActive == null || p.IsActive == isActive) &&
+            (string.IsNullOrEmpty(request.Search) || p.Name!.Contains(request.Search!))
+        );
 
         if (activeProducts is null || !activeProducts.Any()) throw new NoContentException("No products were found");
 
