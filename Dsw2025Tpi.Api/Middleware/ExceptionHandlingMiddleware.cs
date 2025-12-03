@@ -52,6 +52,12 @@ public class ExceptionHandlingMiddleware
                 message = exception.Message;
                 break;
 
+            case InvalidValueException ex:
+                status = HttpStatusCode.BadRequest;
+                message = exception.Message;
+                code = ex.Code;
+                break;
+
             case NoContentException:
                 status = HttpStatusCode.NoContent;
                 message = exception.Message;

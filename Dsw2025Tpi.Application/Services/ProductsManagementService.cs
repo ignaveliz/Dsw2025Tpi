@@ -98,22 +98,22 @@ public class ProductsManagementService
         if (string.IsNullOrWhiteSpace(request.Sku))
         {
             _logger.LogError("El Sku del producto es obligatorio");
-            throw new ArgumentException("El Sku del producto es obligatorio");
+            throw new InvalidValueException("El Sku del producto es obligatorio","3001");
         }
         if (string.IsNullOrWhiteSpace(request.Name))
         {
             _logger.LogError("El nombre del producto es obligatorio");
-            throw new ArgumentException("El nombre del producto es obligatorio");
+            throw new InvalidValueException("El nombre del producto es obligatorio","3002");
         }
         if (request.CurrentUnitPrice <= 0)
         {
             _logger.LogError("El precio del producto debe ser mayor a cero");
-            throw new ArgumentException("El precio del producto debe ser mayor a cero");
+            throw new InvalidValueException("El precio del producto debe ser mayor a cero","3003");
         }
         if (request.StockQuantity < 0)
         {
             _logger.LogError("La cantidad de stock del producto no puede ser negativa");
-            throw new ArgumentException("La cantidad de stock del producto no puede ser negativa");
+            throw new InvalidValueException("La cantidad de stock del producto no puede ser negativa","3004");
         }
 
         var exist = await _repository.First<Product>(p => p.Sku == request.Sku);
