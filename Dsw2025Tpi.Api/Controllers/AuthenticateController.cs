@@ -72,7 +72,7 @@ public class AuthenticateController : ControllerBase
         if (!result.Succeeded)
         {
             _logger.LogWarning("Error en el registro para el usuario: {Username} - Errors: {Errors}", model.Username, string.Join(", ", result.Errors.Select(e => e.Description)));
-            return BadRequest(result.Errors);
+            return BadRequest(new {code = 1001,message = result.Errors });
         }
 
 
